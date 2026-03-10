@@ -11,12 +11,9 @@ urlpatterns = [
     path('users/', views.AdminUserListView.as_view(), name='admin_user_list'),
     path('users/create/', views.AdminUserCreateView.as_view(), name='admin_user_create'),
     path('docs/', views.DocumentationView.as_view(), name='documentation'),
-    path('beta/', views.BetaSignupView.as_view(), name='beta_signup'),
-    path('beta/approve/<str:token>/', views.ApproveBetaUserView.as_view(), name='approve_beta_user'),
     path('delete-account/', views.DeleteAccountView.as_view(), name='delete_account'),
     path('users/<int:pk>/edit/', views.AdminUserUpdateView.as_view(), name='admin_user_edit'),
     path('users/<int:pk>/delete/', views.AdminUserDeleteView.as_view(), name='admin_user_delete'),
     path('settings/', views.AdminSettingsView.as_view(), name='admin_settings'),
-    path('about/', views.AboutView.as_view(), name='about'),
     path('', views.LandingPageView.as_view(), name='home'),
 ]

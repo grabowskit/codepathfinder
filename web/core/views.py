@@ -3,11 +3,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.views.generic import CreateView, ListView, TemplateView, View, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse_lazy
 from django.core.mail import send_mail
 from django.contrib import messages
-from django.core import signing
-from django.utils.crypto import get_random_string
 from django.utils import timezone
 from django.http import JsonResponse
 from django.conf import settings
@@ -29,198 +27,6 @@ logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
-class BetaSignupView(View):
-    """
-    View for Private Beta signup form.
-    New users fill out this form to request access to CodePathfinder.
-    Form submissions are emailed to the admin for review.
-    """
-    template_name = 'core/beta_signup.html'
-    
-    def get(self, request):
-        return render(request, self.template_name, {'form': {}})
-    
-    def post(self, request):
-        # Get form data
-        name = request.POST.get('name', '').strip()
-        email = request.POST.get('email', '').strip()
-        github_repo = request.POST.get('github_repo', '').strip()
-        interest = request.POST.get('interest', '').strip()
-        
-        # Simple validation
-        errors = {}
-        if not name:
-            errors['name'] = ['Name is required.']
-        if not email:
-            errors['email'] = ['Email is required.']
-        
-        if errors:
-            return render(request, self.template_name, {
-                'form': {
-                    'errors': True,
-                    'name': type('obj', (object,), {'value': name, 'errors': errors.get('name', [])}),
-                    'email': type('obj', (object,), {'value': email, 'errors': errors.get('email', [])}),
-                    'github_repo': type('obj', (object,), {'value': github_repo, 'errors': errors.get('github_repo', [])}),
-                    'interest': type('obj', (object,), {'value': interest, 'errors': errors.get('interest', [])}),
-                }
-            })
-        
-        # Create signed approval token (valid for 7 days)
-        approval_data = {
-            'name': name,
-            'email': email,
-            'github_repo': github_repo,
-        }
-        token = signing.dumps(approval_data, salt='beta-approval')
-        
-        # Build approval URL
-        approval_path = reverse('approve_beta_user', kwargs={'token': token})
-        approval_url = f"https://codepathfinder.com{approval_path}"
-        
-        # Send email to admin
-        subject = f"🚀 Private Beta Application: {name}"
-        message = f"""
-New Private Beta Application for CodePathfinder!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📧 APPLICANT DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Name: {name}
-Email: {email}
-GitHub Repository: {github_repo}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💡 INTEREST / USE CASE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-{interest}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ ONE-CLICK APPROVE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Click to instantly create their account:
-{approval_url}
-
-(Link expires in 7 days)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"""
-        
-        try:
-            send_mail(
-                subject,
-                message,
-                'noreply@codepathfinder.com',
-                ['tom@codepathfinder.com'],
-                fail_silently=False,
-            )
-        except Exception as e:
-            # Log the error but still show success to user
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Failed to send beta signup email: {e}")
-        
-        # Show success page
-        return render(request, self.template_name, {
-            'success': True,
-            'submitted_email': email,
-        })
-
-
-class ApproveBetaUserView(View):
-    """
-    View for approving beta applications via secure signed link.
-    Creates a user account and sends welcome email with login credentials.
-    """
-    template_name = 'core/beta_approved.html'
-    
-    def get(self, request, token):
-        try:
-            # Decode the signed token (valid for 7 days = 604800 seconds)
-            data = signing.loads(token, salt='beta-approval', max_age=604800)
-            name = data['name']
-            email = data['email']
-            github_repo = data.get('github_repo', '')
-        except signing.SignatureExpired:
-            messages.error(request, 'This approval link has expired.')
-            return redirect('home')
-        except signing.BadSignature:
-            messages.error(request, 'Invalid approval link.')
-            return redirect('home')
-        
-        # Check if user already exists
-        if User.objects.filter(email=email).exists():
-            messages.warning(request, f'User with email {email} already exists.')
-            return redirect('admin_user_list')
-        
-        # Generate a random password
-        password = get_random_string(12)
-        
-        # Create username from email (before the @)
-        username = email.split('@')[0]
-        # Ensure unique username
-        base_username = username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-        
-        # Create the user
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            is_active=True
-        )
-        
-        # Send welcome email to the new user
-        welcome_subject = "🎉 Welcome to CodePathfinder!"
-        welcome_message = f"""
-Hi {name}!
-
-Great news - your CodePathfinder Private Beta application has been approved!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🔐 YOUR LOGIN CREDENTIALS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Login URL: https://codepathfinder.com/accounts/login/
-Username: {username}
-Password: {password}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-You can also sign in with Google if your email matches.
-
-After logging in, we recommend:
-1. Create your first project by adding a GitHub repository
-2. Run the indexer to build your semantic search index  
-3. Check out the Docs for Claude Desktop integration
-
-Happy coding!
-
-- The CodePathfinder Team
-"""
-        
-        try:
-            send_mail(
-                welcome_subject,
-                welcome_message,
-                'tom@codepathfinder.com',
-                [email],
-                fail_silently=False,
-            )
-            messages.success(request, f'User {email} created and welcome email sent!')
-        except Exception as e:
-            messages.warning(request, f'User {email} created but welcome email failed to send. Password: {password}')
-        
-        return redirect('admin_user_list')
 
 
 def is_social_account_user(user):
@@ -298,22 +104,19 @@ class SSOLogoutView(View):
     """Clear Django session then chain to LibreChat logout.
 
     LibreChat's OPENID_USE_END_SESSION_ENDPOINT will subsequently redirect to
-    /o/logout/ (RP-Initiated Logout) which finally lands back on the home page.
+    /o/logout/ (RP-Initiated Logout) which finally lands back on the login page.
     """
 
     def get(self, request):
         logout(request)
-        return redirect('home')
+        return redirect('account_login')
 
 
 class LandingPageView(View):
     def get(self, request):
         if request.user.is_authenticated:
             return redirect('project_list')
-        return render(request, 'core/landing.html')
-
-class AboutView(TemplateView):
-    template_name = 'core/about.html'
+        return redirect('account_login')
 
 
 
