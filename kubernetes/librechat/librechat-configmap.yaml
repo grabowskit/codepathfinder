@@ -1,0 +1,113 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: librechat-config
+  namespace: codepathfinder
+data:
+  librechat.yaml: |
+    version: 1.2.1
+    cache: true
+
+    interface:
+      endpointsMenu: true
+      modelSelect: true
+
+    mcpSettings:
+      allowedDomains:
+        - "codepathfinder-service.codepathfinder.svc.cluster.local"
+
+    mcpServers:
+      codepathfinder:
+        type: streamable-http
+        url: "http://codepathfinder-service.codepathfinder.svc.cluster.local/mcp/"
+        title: "CodePathfinder"
+        description: "Semantic code search, GitHub operations, skills, and job management"
+        headers:
+          Authorization: "Bearer ${CPF_INTERNAL_SERVICE_SECRET}"
+          X-User-Email: "{{LIBRECHAT_USER_EMAIL}}"
+        timeout: 60000
+        initTimeout: 15000
+        startup: true
+
+    endpoints:
+      bedrock:
+        availableRegions:
+          - "us-east-2"
+        streamRate: 35
+        titleModel: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+      custom:
+        # OpenAI - set OPENAI_API_KEY in librechat-secrets
+        - name: "OpenAI"
+          apiKey: "${OPENAI_API_KEY}"
+          baseURL: "https://api.openai.com/v1"
+          models:
+            default: ["gpt-5", "gpt-5-mini", "gpt-5.4"]
+            fetch: false
+          titleConvo: true
+          titleModel: "gpt-5-mini"
+          modelDisplayLabel: "OpenAI"
+
+    modelSpecs:
+      list:
+        - name: "gpt-5"
+          label: "GPT-5"
+          description: "OpenAI GPT-5 with CodePathfinder tools"
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "OpenAI"
+            model: "gpt-5"
+            mcpServers:
+              - "codepathfinder"
+        - name: "gpt-5-mini"
+          label: "GPT-5 Mini"
+          description: "OpenAI GPT-5 Mini with CodePathfinder tools"
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "OpenAI"
+            model: "gpt-5-mini"
+            mcpServers:
+              - "codepathfinder"
+        - name: "gpt-5.4"
+          label: "GPT-5.4"
+          description: "OpenAI GPT-5.4 with CodePathfinder tools"
+          default: true
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "OpenAI"
+            model: "gpt-5.4"
+            mcpServers:
+              - "codepathfinder"
+        - name: "bedrock-claude-sonnet-4-6"
+          label: "Claude Sonnet 4.6"
+          description: "Anthropic Claude Sonnet 4.6 via AWS Bedrock with CodePathfinder tools"
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "bedrock"
+            model: "us.anthropic.claude-sonnet-4-6"
+            mcpServers:
+              - "codepathfinder"
+        - name: "bedrock-claude-opus-4-6"
+          label: "Claude Opus 4.6"
+          description: "Anthropic Claude Opus 4.6 via AWS Bedrock with CodePathfinder tools"
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "bedrock"
+            model: "us.anthropic.claude-opus-4-6-v1"
+            mcpServers:
+              - "codepathfinder"
+        - name: "bedrock-claude-haiku-4-5"
+          label: "Claude Haiku 4.5"
+          description: "Anthropic Claude Haiku 4.5 via AWS Bedrock with CodePathfinder tools"
+          mcpServers:
+            - "codepathfinder"
+          preset:
+            endpoint: "bedrock"
+            model: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+            mcpServers:
+              - "codepathfinder"

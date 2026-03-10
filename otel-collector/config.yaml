@@ -1,0 +1,110 @@
+# OTel Collector Configuration — CodePathfinder Customer Telemetry
+#
+# Receives OTLP from customer applications (via Django auth proxy at /otel/v1/*)
+# and routes traces/metrics/logs to project-scoped Elasticsearch indices.
+#
+# Index routing: copies cpf.project.id → elasticsearch.index.suffix so the
+# ES exporter appends it to the base index name:
+#   traces  → traces-customer.project-{cpf.project.id}
+#   metrics → metrics-customer.project-{cpf.project.id}
+#   logs    → logs-customer.project-{cpf.project.id}
+#
+# Auth: handled upstream by the Django OTLP proxy (web/otel_ingest/).
+#       This collector is NOT exposed externally.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Copy cpf.project.id → elasticsearch.index.suffix so the ES exporter
+  # appends it to the base index name for per-project routing.
+  transform/route_to_project:
+    error_mode: ignore
+    trace_statements:
+      - context: resource
+        statements:
+          - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+    metric_statements:
+      - context: resource
+        statements:
+          - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+    log_statements:
+      - context: resource
+        statements:
+          - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+
+exporters:
+  elasticsearch/traces:
+    endpoints:
+      - ${ELASTICSEARCH_ENDPOINT}
+    api_key: ${ELASTICSEARCH_API_KEY}
+    traces_index: "traces-customer.project-"
+    traces_dynamic_index:
+      enabled: true
+    mapping:
+      mode: otel
+
+  elasticsearch/metrics:
+    endpoints:
+      - ${ELASTICSEARCH_ENDPOINT}
+    api_key: ${ELASTICSEARCH_API_KEY}
+    metrics_index: "metrics-customer.project-"
+    metrics_dynamic_index:
+      enabled: true
+    mapping:
+      mode: otel
+    flush:
+      interval: 5s
+      bytes: 5242880
+
+  elasticsearch/logs:
+    endpoints:
+      - ${ELASTICSEARCH_ENDPOINT}
+    api_key: ${ELASTICSEARCH_API_KEY}
+    logs_index: "logs-customer.project-"
+    logs_dynamic_index:
+      enabled: true
+    mapping:
+      mode: otel
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+
+  telemetry:
+    logs:
+      level: info
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, transform/route_to_project, batch]
+      exporters: [elasticsearch/traces]
+
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, transform/route_to_project, batch]
+      exporters: [elasticsearch/metrics]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, transform/route_to_project, batch]
+      exporters: [elasticsearch/logs]

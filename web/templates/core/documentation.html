@@ -1,0 +1,1653 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentation - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+    <div class="mb-6">
+        <h1>Documentation</h1>
+        <p style="color: var(--text-secondary);">Complete guide to using CodePathfinder for semantic code search and
+            indexing.</p>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="card mb-6" style="background: var(--bg-secondary);">
+        <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Contents</h2>
+        <nav>
+            <ul style="margin: 0; padding: 0; list-style: none;">
+                <li style="margin-bottom: 0.5rem;"><a href="#getting-started" style="color: var(--primary);">1. Getting
+                        Started</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#project-management" style="color: var(--primary);">2.
+                        Project Management</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#skills" style="color: var(--primary);">3. Skills</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#api-mcp" style="color: var(--primary);">4. API &amp; MCP
+                        Tool Calling</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#chat-api" style="color: var(--primary);">5. Chat
+                        API</a></li>
+                {% if user.is_superuser %}
+                <li style="margin-bottom: 0.5rem;"><a href="#user-management" style="color: var(--primary);">6. User
+                        Management (Admin)</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#system-settings" style="color: var(--primary);">7. System
+                        Settings (Admin)</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">8.
+                        Troubleshooting</a></li>
+                {% else %}
+                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">6.
+                        Troubleshooting</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+
+    <!-- ==================== GETTING STARTED ==================== -->
+    <div class="card mb-6" id="getting-started">
+        <h2>1. Getting Started</h2>
+        <p style="margin-bottom: 1.5rem;">CodePathfinder helps you index and semantically search your GitHub
+            repositories. Once indexed, you can use Claude Desktop or the API to search your codebase using natural
+            language.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What is CodePathfinder?</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder is a semantic code search platform
+            that:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Creates vector embeddings and indexes from your GitHub repositories for
+                intelligent search</li>
+            <li style="margin-bottom: 0.5rem;">Uses AI-powered semantic search to find relevant code by meaning, not
+                just keywords</li>
+            <li style="margin-bottom: 0.5rem;">Integrates with Claude Desktop, ChatGPT, and Gemini via MCP (Model Context Protocol)</li>
+            <li style="margin-bottom: 0.5rem;">Provides 21 powerful tools for code search, GitHub operations, skills, and job management</li>
+            <li style="margin-bottom: 0.5rem;">Supports 17+ programming languages and file formats natively</li>
+            <li style="margin-bottom: 0.5rem;">Includes an AI Chat interface powered by LibreChat with multi-model support (GPT-5, Claude Sonnet 4)
+            </li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Supported Languages</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder provides native syntax analysis and
+            semantic indexing for the following languages:</p>
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem;">
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🐍</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Python</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📘</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">TypeScript</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🟨</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">JavaScript</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">☕</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Java</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🐹</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Go</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">⚙️</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">C</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">➕</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">C++</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🗄️</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">SQL</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📝</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Markdown</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📋</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">YAML</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📦</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">JSON</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🐘</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Gradle</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">🔧</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Handlebars</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">⚙️</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Properties</span>
+            </div>
+            <div
+                style="background: var(--bg-secondary); padding: 0.5rem 0.75rem; border-radius: 6px; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.1rem;">📄</span>
+                <span style="color: var(--text-primary); font-size: 0.9rem;">Plain Text</span>
+            </div>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Quick Start Guide</h3>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+            <li style="margin-bottom: 1rem;">
+                <strong>Sign Up or Log In</strong><br>
+                Create an account or sign in with Google. New accounts may require administrator approval.
+            </li>
+            <li style="margin-bottom: 1rem;">
+                <strong>Create a Project</strong><br>
+                Navigate to <strong>Projects</strong> in the sidebar and click <strong>+ New Project</strong>.
+            </li>
+            <li style="margin-bottom: 1rem;">
+                <strong>Configure Your Repository</strong><br>
+                Enter your repository details:
+                <ul style="margin-top: 0.5rem; margin-left: 1rem;">
+                    <li><strong>Name:</strong> A friendly name for your project</li>
+                    <li><strong>Repository URL:</strong> Full HTTPS URL (e.g., <code>https://github.com/org/repo</code>)
+                    </li>
+                    <li><strong>GitHub Token:</strong> Required for private repositories</li>
+                    <li><strong>Branch:</strong> Specific branch to index (optional)</li>
+                </ul>
+            </li>
+            <li style="margin-bottom: 1rem;">
+                <strong>Run the Indexer</strong><br>
+                Click <strong>Save &amp; Run</strong> to start indexing, or <strong>Save</strong> to run later.
+            </li>
+            <li style="margin-bottom: 1rem;">
+                <strong>Start Chatting or Connect Claude Desktop</strong><br>
+                Use the built-in AI Chat at <strong>Chat</strong> in the sidebar, or generate an API key to connect Claude Desktop.
+            </li>
+        </ol>
+
+        <!-- Hint Box -->
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Hint:</strong> For private repositories, you'll need a GitHub Personal Access Token with
+                <code>repo</code> scope. Generate one at <a href="https://github.com/settings/tokens" target="_blank"
+                    style="color: var(--primary);">GitHub Settings &rarr; Developer settings &rarr; Personal access
+                    tokens</a>.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== PROJECT MANAGEMENT ==================== -->
+    <div class="card mb-6" id="project-management">
+        <h2>2. Project Management</h2>
+        <p style="margin-bottom: 1.5rem;">Projects are the core of CodePathfinder. Each project represents a GitHub
+            repository that you want to index and search.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Creating a Project</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Click <strong>+ New Project</strong> from the
+            Projects page and fill in the following fields:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Field</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Required</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Name</strong></td>
+                    <td style="padding: 0.75rem;">A descriptive name for your project</td>
+                    <td style="padding: 0.75rem;">Yes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Repository URL</strong></td>
+                    <td style="padding: 0.75rem;">Full HTTPS URL to your GitHub repository</td>
+                    <td style="padding: 0.75rem;">Yes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>GitHub Token</strong></td>
+                    <td style="padding: 0.75rem;">Personal Access Token for private repos</td>
+                    <td style="padding: 0.75rem;">For private repos</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Branch</strong></td>
+                    <td style="padding: 0.75rem;">Specific branch to index (defaults to main/master)</td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Clean Index</strong></td>
+                    <td style="padding: 0.75rem;">Rebuilds the entire index from scratch</td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Pull Before Index</strong></td>
+                    <td style="padding: 0.75rem;">Runs <code>git pull</code> before indexing</td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>Watch Mode</strong></td>
+                    <td style="padding: 0.75rem;">Keeps indexer running to watch for changes</td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Project Actions</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Manage your projects using these essential
+            actions available in the interface:</p>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th class="doc-icon-cell">Icon</th>
+                    <th>Action</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">Share</span></td>
+                    <td>
+                        <p class="doc-action-desc">Grant other users read-only access to your project. Shared users can
+                            use MCP tools to search the index but cannot modify project settings.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4">
+                                </path>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">API Keys</span></td>
+                    <td>
+                        <p class="doc-action-desc">Create and manage project-scoped access keys for Claude Desktop, MCP
+                            bridges, or direct programmatic API integration.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper" style="color: var(--text-secondary);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">Edit</span></td>
+                    <td>
+                        <p class="doc-action-desc">Update repository configurations, change branches, or adjust advanced
+                            indexer settings like concurrency and watch mode.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">Clone</span></td>
+                    <td>
+                        <p class="doc-action-desc">Quickly replicate a project configuration. Useful for A/B testing
+                            different indexing strategies on the same repository.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper"
+                            style="color: var(--success); background: rgba(34, 197, 94, 0.1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">Run</span></td>
+                    <td>
+                        <p class="doc-action-desc">Initiates the containerized indexing job. This will clone the
+                            codebase and start building the semantic search index.</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doc-icon-cell">
+                        <div class="doc-icon-wrapper" style="color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                </path>
+                            </svg>
+                        </div>
+                    </td>
+                    <td><span class="doc-action-name">Delete</span></td>
+                    <td>
+                        <p class="doc-action-desc">Permanently removes the project and its associated search
+                            index. <strong>Note:</strong> This action cannot be reversed.</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Project Status & Visibility</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder separates the technical
+            <strong>Status</strong> of a project from its manual <strong>Visibility</strong> toggle:
+        </p>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="margin: 0 0 0.5rem;"><strong>Visibility Toggle (On/Off)</strong></p>
+            <p style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">
+                Located next to the project name. Turn <strong>On</strong> to enable searching via the Chat app or API.
+                Turn <strong>Off</strong> to hide the project from search tools without losing your index.
+            </p>
+        </div>
+
+        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Indexing Statuses:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-pending"
+                    style="font-size: 0.75rem;">Pending</span> - Project created but indexer has not run yet</li>
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-running"
+                    style="font-size: 0.75rem;">Running</span> - Indexer is currently processing the repository</li>
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-watching"
+                    style="font-size: 0.75rem;">Watching</span> - Initial index complete, monitoring for changes</li>
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-completed"
+                    style="font-size: 0.75rem;">Completed</span> - Indexing complete, project is ready</li>
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-stopped"
+                    style="font-size: 0.75rem;">Stopped</span> - Indexing was manually halted</li>
+            <li style="margin-bottom: 0.5rem;"><span class="badge badge-failed"
+                    style="font-size: 0.75rem;">Failed</span> - Indexing failed (check console for errors)</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Indexer Console</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">The console at the bottom of the Projects page
+            shows real-time logs from running indexer jobs:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+            <li style="margin-bottom: 0.5rem;">Click the <strong>Console</strong> bar to expand/collapse the log view
+            </li>
+            <li style="margin-bottom: 0.5rem;">Logs refresh automatically every 10 seconds</li>
+            <li style="margin-bottom: 0.5rem;">Newest logs appear at the top</li>
+            <li style="margin-bottom: 0.5rem;">Look for <code>[ERROR]</code> messages if indexing fails</li>
+        </ul>
+
+        <!-- Warning Box -->
+        <div
+            style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Warning:</strong> Large repositories may take several minutes to index. Do not stop the indexer
+                unless necessary, as partial indexes may produce incomplete search results.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== SKILLS ==================== -->
+    <div class="card mb-6" id="skills">
+        <h2>3. Skills</h2>
+        <p style="margin-bottom: 1.5rem;">Skills are reusable AI agent instructions that enhance code analysis and development workflows. They provide structured prompts and configurations that guide the Chat agent's behavior.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What are Skills?</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skills define how the AI agent should approach specific tasks. Each skill includes:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>Instructions:</strong> Detailed prompts that guide the agent's behavior and output format</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Allowed Tools:</strong> Which MCP tools the skill can use (e.g., <code>semantic_code_search</code>, <code>read_file_from_chunks</code>)</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Tags:</strong> Categories for organizing and filtering skills</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Context Files:</strong> Optional reference files included with the skill</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Browsing Skills</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Navigate to <strong>Skills</strong> in the sidebar to view all available skills:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>Search:</strong> Find skills by name or description</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Filter by Curated:</strong> Show only administrator-verified skills</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Filter by Tag:</strong> Click any tag to filter by category</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Usage Count:</strong> See how many times each skill has been used</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Creating a Skill</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Click <strong>+ Create Skill</strong> to define a new skill:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Field</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Required</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Name</strong></td>
+                    <td style="padding: 0.75rem;">Unique identifier (e.g., <code>code-review</code>, <code>test-generator</code>)</td>
+                    <td style="padding: 0.75rem;">Yes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Description</strong></td>
+                    <td style="padding: 0.75rem;">Brief summary shown in the skills list</td>
+                    <td style="padding: 0.75rem;">Yes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Instructions</strong></td>
+                    <td style="padding: 0.75rem;">Full prompt/instructions for the AI agent (supports Markdown)</td>
+                    <td style="padding: 0.75rem;">Yes</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Allowed Tools</strong></td>
+                    <td style="padding: 0.75rem;">JSON array of tool names, e.g., <code>["semantic_code_search"]</code></td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>Tags</strong></td>
+                    <td style="padding: 0.75rem;">JSON array of category tags, e.g., <code>["python", "testing"]</code></td>
+                    <td style="padding: 0.75rem;">No</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Using Skills in Chat</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">The Chat interface includes a built-in <strong>Skill Selector</strong> that lets you enhance your conversations with skill-specific instructions.</p>
+
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;"><strong>How to use the Skill Selector:</strong></p>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>Top Skills Cards:</strong> Your most-used skills appear as clickable cards above the chat input. Click one to select it.</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Search for Skills:</strong> Type in the search box to find skills by name, description, or tags.</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Selected Skill Badge:</strong> When a skill is selected, a badge appears showing the active skill. Click X to clear it.</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Per-Message Selection:</strong> You can change skills between messages - each message can use a different skill.</li>
+        </ol>
+
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">When you send a message with a skill selected, the skill's instructions are included with your message to guide the AI's response.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Importing Skills</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skills can be imported from <code>SKILL.md</code> files via the UI, API, or MCP tool.</p>
+
+        <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">SKILL.md Format</h4>
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+<pre style="margin: 0; font-size: 0.85rem; overflow-x: auto; white-space: pre;"><code>---
+name: my-skill-name
+description: Brief description of what the skill does
+allowed-tools:
+  - semantic_code_search
+  - read_file_from_chunks
+  - github_create_issue
+tags:
+  - code-quality
+  - automation
+---
+# Skill Instructions
+
+Your detailed instructions for the AI agent here...
+
+## Section 1
+Instructions for a specific task...
+
+## Section 2
+More detailed guidance...</code></pre>
+        </div>
+
+        <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">Import Methods</h4>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem; width: 25%;"><strong>Skills Builder UI</strong></td>
+                    <td style="padding: 0.75rem;">Go to <strong>Skills Builder</strong> &rarr; <strong>Create Skill</strong> and paste your SKILL.md content, or fill in the form fields manually.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>API Endpoint</strong></td>
+                    <td style="padding: 0.75rem;"><code>POST /skills/import/</code> with JSON body: <code>{"content": "---\nname: ..."}</code></td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>MCP Tool</strong></td>
+                    <td style="padding: 0.75rem;">Use the <code>skills_import</code> tool with the SKILL.md content as the <code>content</code> parameter.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Default Skills</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder includes these pre-built skills with GitHub integration:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>code-review-coach:</strong> Comprehensive code reviews with actionable feedback and best practices</li>
+            <li style="margin-bottom: 0.5rem;"><strong>code-optimizer:</strong> Performance analysis with optimization suggestions</li>
+            <li style="margin-bottom: 0.5rem;"><strong>feature-request-taker:</strong> Converts feature descriptions into well-structured GitHub issues</li>
+            <li style="margin-bottom: 0.5rem;"><strong>bug-reporter:</strong> Creates detailed bug reports with reproduction steps and suggested fixes</li>
+        </ul>
+
+        <!-- Hint Box -->
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Hint:</strong> Look for <span class="badge" style="background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2);">Curated</span> badges to find skills that have been verified and optimized by administrators.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Skills MCP Tools</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Skills are also available via MCP for programmatic access. The following tools are available to Claude Desktop and other MCP clients:</p>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tool Name</th>
+                    <th>Capability & Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_list</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">List all available skills with optional filtering by tags or curated status.</p>
+                        <span class="doc-code-example">"Show me all curated Python skills"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_get</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Retrieve a skill by exact name, including full instructions and metadata.</p>
+                        <span class="doc-code-example">"Get the code-review skill instructions"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_search</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Search for skills by name, description, or tags using natural language.</p>
+                        <span class="doc-code-example">"Find skills related to testing and quality"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_sync</span>
+                        <span class="badge badge-info" style="font-size: 0.6rem; margin-left: 0.5rem;">Admin</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Sync skills from the configured GitHub repository (admin only).</p>
+                        <span class="doc-code-example">"Sync the latest skills from GitHub"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_import</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Import a skill from SKILL.md content.</p>
+                        <span class="doc-code-example">"Import this skill definition: ---\nname: ..."</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 180px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">skills_activate</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Activate or deactivate a skill by name.</p>
+                        <span class="doc-code-example">"Activate the code-review skill"</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Skills API Examples</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">You can call skill tools directly via the MCP API:</p>
+
+        <!-- List Skills Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>List all curated skills:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "skills_list",
+  "arguments": {
+    "curated_only": true
+  }
+}</pre>
+        </div>
+
+        <!-- Get Skill Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Get a specific skill:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "skills_get",
+  "arguments": {
+    "name": "code-review"
+  }
+}</pre>
+        </div>
+
+        <!-- Search Skills Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Search for skills:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "skills_search",
+  "arguments": {
+    "query": "security analysis",
+    "limit": 5
+  }
+}</pre>
+        </div>
+
+        <!-- Python Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Python example - Fetch and use a skill:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">import requests
+
+API_KEY = "cpf_..."
+API_URL = "https://codepathfinder.com/mcp/"
+
+headers = {
+    "Authorization": f"Bearer {API_KEY}",
+    "Content-Type": "application/json"
+}
+
+# Get the code-review skill
+response = requests.post(API_URL, headers=headers, json={
+    "name": "skills_get",
+    "arguments": {"name": "code-review"}
+})
+
+skill_data = response.json()
+print(f"Skill: {skill_data['name']}")
+print(f"Instructions: {skill_data['instructions']}")
+print(f"Allowed Tools: {skill_data['allowed_tools']}")</pre>
+        </div>
+
+        {% if user.is_superuser %}
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">GitHub Sync <span class="badge badge-info" style="font-size: 0.7rem; vertical-align: middle;">Admin</span></h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Administrators can sync skills from a GitHub repository:</p>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            <li style="margin-bottom: 0.5rem;">Configure a skills repository in <strong>Settings → System → Skills Config</strong></li>
+            <li style="margin-bottom: 0.5rem;">Click <strong>Sync from GitHub</strong> on the Skills page</li>
+            <li style="margin-bottom: 0.5rem;">Skills are defined in <code>SKILL.md</code> files with YAML frontmatter</li>
+        </ol>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>SKILL.md Format Example:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">---
+name: code-review
+description: Perform a thorough code review
+tags: ["code-quality", "review"]
+allowed_tools: ["semantic_code_search", "read_file_from_chunks"]
+---
+# Code Review Instructions
+
+Analyze the code for:
+- Code quality and best practices
+- Potential bugs or issues
+- Performance considerations
+...</pre>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ==================== API & MCP TOOLS ==================== -->
+    <div class="card mb-6" id="api-mcp">
+        <h2>4. API &amp; MCP Tool Calling</h2>
+        <p style="margin-bottom: 1.5rem;">CodePathfinder provides a REST API and MCP (Model Context Protocol)
+            integration for programmatic access to your indexed code.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Generating API Keys</h3>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Navigate to your project in the Projects list</li>
+            <li style="margin-bottom: 0.5rem;">Click the <strong>API Keys</strong> button (key icon)</li>
+            <li style="margin-bottom: 0.5rem;">Enter a descriptive label (e.g., "Claude Desktop - Home")</li>
+            <li style="margin-bottom: 0.5rem;">Click <strong>Generate Key</strong></li>
+            <li style="margin-bottom: 0.5rem;"><strong>Copy the key immediately</strong> - it will only be shown once!
+            </li>
+        </ol>
+
+        <!-- Warning Box -->
+        <div
+            style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Important:</strong> API keys are only displayed once when created. Store them securely. If you
+                lose a key, you'll need to generate a new one and update your configurations.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Connecting Claude Desktop</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">There are two ways to connect Claude Desktop to
+            CodePathfinder:</p>
+
+        <!-- Option 1: OAuth (Recommended) -->
+        <div
+            style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--success);">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Option 1: OAuth Connector (Recommended)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Connect via OAuth — no API key needed:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Open Claude Desktop → <strong>Settings → Connectors</strong></li>
+                <li style="margin-bottom: 0.5rem;">Click <strong>Add Connector</strong> → <strong>Custom</strong></li>
+                <li style="margin-bottom: 0.5rem;">Enter Name: <code>CodePathfinder</code>, URL: <code>https://codepathfinder.com/mcp</code></li>
+                <li style="margin-bottom: 0.5rem;">Click <strong>Add</strong>, then authorize with your CodePathfinder account</li>
+            </ol>
+        </div>
+
+        <!-- Option 2: API Key Bridge -->
+        <div
+            style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                Option 2: API Key Bridge
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                For environments where OAuth isn't available, use an API key with the MCP bridge:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Generate an API key for your project</li>
+                <li style="margin-bottom: 0.5rem;">Add this to your Claude Desktop config file (<code>claude_desktop_config.json</code>):</li>
+                <pre
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">
+{
+  "mcpServers": {
+    "codepathfinder": {
+      "command": "npx",
+      "args": ["-y", "@grabowskit/mcp-bridge"],
+      "env": {
+        "CODEPATHFINDER_API_KEY": "YOUR_API_KEY",
+        "CODEPATHFINDER_API_ENDPOINT": "https://codepathfinder.com/mcp/"
+      }
+    }
+  }
+}</pre>
+                <li style="margin-bottom: 0.5rem;">Restart Claude Desktop</li>
+            </ol>
+        </div>
+
+        <!-- ChatGPT Developer Mode -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">🟢 ChatGPT (Developer Mode)</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                ChatGPT supports MCP through Developer Mode (Pro, Plus, Business, Enterprise accounts):
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Settings → Apps & Connectors → Advanced settings → Enable Developer
+                    mode</li>
+                <li style="margin-bottom: 0.5rem;">Create a new app in the Connectors tab with your CodePathfinder
+                    endpoint</li>
+                <li style="margin-bottom: 0.5rem;">Use Developer mode in conversations to access your tools</li>
+            </ol>
+        </div>
+
+        <!-- Google Gemini -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">🔵 Google Gemini</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Gemini CLI and Gemini Code Assist support MCP with the same configuration format as Claude Desktop.
+            </p>
+        </div>
+
+        <!-- Option 2: API Key -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">🔧 Direct API Access</h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                For direct API access or custom integrations, use project-scoped API keys:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Generate an API key from your project's <strong>API Keys</strong>
+                    page</li>
+                <li style="margin-bottom: 0.5rem;">Use the key in the <code>Authorization: Bearer YOUR_API_KEY</code>
+                    header</li>
+                <li style="margin-bottom: 0.5rem;">Make requests to <code>POST https://codepathfinder.com/mcp/</code> using MCP JSON-RPC format</li>
+            </ol>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available MCP Tools (21 Total)</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Once connected, your AI agent has access to 21 tools across 4 categories.</p>
+        <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 1rem;">Code Search (6 tools)</h4>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tool Name</th>
+                    <th>Capability & Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">semantic_code_search</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Search code using natural language
+                            queries. Returns relevant code chunks with precision scores.</p>
+                        <span class="doc-code-example">"Find the function that handles user authentication"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">map_symbols_by_query</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Identify symbols (functions, classes,
+                            methods) matching a query, grouped by file path.</p>
+                        <span class="doc-code-example">"Find all classes named Controller"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">symbol_analysis</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Deep dive into a specific symbol to
+                            find its definitions, call sites, and global references.</p>
+                        <span class="doc-code-example">"Analyze the authenticateUser function"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">read_file_from_chunks</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Reconstruct and read a complete source
+                            file from the indexed semantic chunks.</p>
+                        <span class="doc-code-example">"Read the file src/auth/login.ts"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">document_symbols</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Intelligently list symbols in a file
+                            that would benefit from improved documentation.</p>
+                        <span class="doc-code-example">"List symbols needing docs in models/user.ts"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">size</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Retrieve index statistics including
+                            document counts and total storage consumption.</p>
+                        <span class="doc-code-example">"How many files are indexed in this project?"</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">GitHub Integration Tools</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder provides 7 GitHub tools for creating issues, pull requests, comments, and managing branches directly from Chat or MCP.</p>
+
+        <!-- Requirements Box -->
+        <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <p style="margin: 0 0 0.75rem; font-size: 0.9rem;"><strong>Requirements:</strong></p>
+            <ul style="margin: 0 0 0 1.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                <li style="margin-bottom: 0.25rem;"><strong>GitHub Personal Access Token</strong> - Configure in your <a href="{% url 'admin_user_edit' user.id %}" style="color: var(--primary);">Profile Settings</a> under GitHub Integration</li>
+                <li style="margin-bottom: 0.25rem;"><strong>Token scopes required:</strong> <code>repo</code> (for private repos) or <code>public_repo</code> (for public repos only)</li>
+                <li style="margin-bottom: 0.25rem;"><strong>Project status</strong> must be: <code>completed</code>, <code>watching</code>, or <code>stopped</code></li>
+                <li style="margin-bottom: 0.25rem;">You must be the project <strong>owner</strong> or have it <strong>shared</strong> with you</li>
+            </ul>
+        </div>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tool Name</th>
+                    <th>Capability & Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_create_issue</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Create a new issue in the project's GitHub repository with title, body, and optional labels.</p>
+                        <span class="doc-code-example">"Create an issue about the authentication bug we discussed"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_add_comment</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Add a comment to an existing issue or pull request by its number.</p>
+                        <span class="doc-code-example">"Add a comment to issue #42 with my analysis"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_create_pull_request</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Create a pull request from a head branch to a base branch with title and description.</p>
+                        <span class="doc-code-example">"Create a PR from feature/auth-fix to main"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_create_branch</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Create a new branch in the repository from a source ref.</p>
+                        <span class="doc-code-example">"Create a new branch called feature/user-dashboard from main"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_list_branches</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">List all branches in the repository with the default branch indicated.</p>
+                        <span class="doc-code-example">"What branches exist in this project?"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_get_repo_info</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Get repository metadata including name, description, visibility, and default branch.</p>
+                        <span class="doc-code-example">"What's the repository info for this project?"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">github_get_labels</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Get all labels defined in the repository for use when creating issues.</p>
+                        <span class="doc-code-example">"What labels are available in this repository?"</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Using GitHub Tools in Chat</h4>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Simply ask the Chat agent to perform GitHub actions:</p>
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <div style="margin-bottom: 1rem;">
+                <p style="margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Create an issue from code analysis:</p>
+                <code style="display: block; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem;">"Analyze the login function for security issues and create a GitHub issue with your findings"</code>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <p style="margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Add analysis as a PR comment:</p>
+                <code style="display: block; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem;">"Review the changes in PR #15 and add your feedback as a comment"</code>
+            </div>
+            <div>
+                <p style="margin: 0 0 0.5rem; font-size: 0.85rem; color: var(--text-muted);">Create a branch for a feature:</p>
+                <code style="display: block; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem;">"Create a branch called fix/auth-token-expiry from the main branch"</code>
+            </div>
+        </div>
+
+        <h4 style="font-size: 1rem; margin-top: 1.5rem; margin-bottom: 1rem;">GitHub API Examples</h4>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Call GitHub tools directly via the MCP API:</p>
+
+        <!-- Create Issue Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Create an issue:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "github_create_issue",
+  "arguments": {
+    "project_name": "my-project",
+    "title": "Bug: Authentication token expires too quickly",
+    "body": "## Description\nUsers are being logged out after only 5 minutes...",
+    "labels": ["bug", "authentication"]
+  }
+}</pre>
+        </div>
+
+        <!-- Create PR Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Create a pull request:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "github_create_pull_request",
+  "arguments": {
+    "project_name": "my-project",
+    "title": "Fix authentication token expiry",
+    "body": "## Summary\nExtends token lifetime from 5 minutes to 1 hour.\n\n## Testing\n- [x] Unit tests pass",
+    "head": "fix/auth-token-expiry",
+    "base": "main"
+  }
+}</pre>
+        </div>
+
+        <!-- Add Comment Example -->
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Add a comment to an issue/PR:</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "name": "github_add_comment",
+  "arguments": {
+    "project_name": "my-project",
+    "issue_number": 42,
+    "body": "I analyzed the code and found the root cause. The token refresh logic..."
+  }
+}</pre>
+        </div>
+
+        <!-- Info Box about GitHub appearance -->
+        <div style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>How it appears on GitHub:</strong></p>
+            <p style="margin: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                Issues, PRs, and comments created through CodePathfinder will appear on GitHub under <strong>your GitHub username</strong> (the account associated with your Personal Access Token). They will look like any other contribution you make directly on GitHub.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Direct MCP API</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">You can call the MCP server directly using HTTP requests (MCP 2025-06-18 Streamable HTTP):</p>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Endpoint:</strong></p>
+            <code
+                style="display: block; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem;">POST /mcp/</code>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Headers:</strong></p>
+            <code
+                style="display: block; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem;">
+Authorization: Bearer YOUR_API_KEY<br>
+Content-Type: application/json
+            </code>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Request Body (JSON-RPC):</strong></p>
+            <pre
+                style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "semantic_code_search",
+    "arguments": {
+      "query": "authentication middleware",
+      "size": 10
+    }
+  }
+}</pre>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Job Management Tools</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Manage indexing jobs programmatically through MCP:</p>
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tool Name</th>
+                    <th>Capability & Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">job_manage</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Start, stop, or reset indexing jobs for your projects.</p>
+                        <span class="doc-code-example">"Start indexing the backend project"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 240px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">job_status</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Get the current status and details of indexing jobs.</p>
+                        <span class="doc-code-example">"What's the status of my indexing jobs?"</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Hint Box -->
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Hint:</strong> API keys are rate-limited to 60 requests per minute. If you need higher limits,
+                please contact <a href="mailto:support@codepathfinder.com"
+                    style="color: var(--primary);">support@codepathfinder.com</a>.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== AI CHAT ==================== -->
+    <div class="card mb-6" id="chat-api">
+        <h2>5. AI Chat</h2>
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                CodePathfinder includes a built-in AI Chat interface powered by <strong>LibreChat</strong>, available at
+                <strong>Chat</strong> in the sidebar.
+            </p>
+        </div>
+        <p style="margin-bottom: 1.5rem;">The Chat interface lets you interact with your codebase through an AI assistant that has access to all 21 MCP tools.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available Models</h3>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>GPT-5</strong> — OpenAI's most capable model</li>
+            <li style="margin-bottom: 0.5rem;"><strong>GPT-5 Mini</strong> — Faster, cost-effective option</li>
+            <li style="margin-bottom: 0.5rem;"><strong>GPT-5.2</strong> — Latest OpenAI model</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Claude Sonnet 4</strong> — Anthropic's balanced model</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Claude 3.5 Haiku</strong> — Fast and efficient</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What You Can Do</h3>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Search your codebase using natural language</li>
+            <li style="margin-bottom: 0.5rem;">Analyze symbols, functions, and code patterns</li>
+            <li style="margin-bottom: 0.5rem;">Create GitHub issues and pull requests from chat</li>
+            <li style="margin-bottom: 0.5rem;">Manage branches and add comments to PRs</li>
+            <li style="margin-bottom: 0.5rem;">Start and monitor indexing jobs</li>
+            <li style="margin-bottom: 0.5rem;">Use Skills to apply specialized AI agent behaviors</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Conversation API</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Legacy conversation records can be accessed programmatically:</p>
+
+        <!-- List Conversations -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+                <span
+                    style="background: #3b82f6; color: white; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; font-weight: bold;">GET</span>
+                <code style="font-size: 0.9rem;">/api/v1/chat/conversations/</code>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                List all conversations for the authenticated project.
+            </p>
+        </div>
+
+        <!-- Get Conversation -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+                <span
+                    style="background: #3b82f6; color: white; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; font-weight: bold;">GET</span>
+                <code style="font-size: 0.9rem;">/api/v1/chat/conversations/&lt;id&gt;/</code>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Retrieve details and message history for a specific conversation.
+            </p>
+        </div>
+
+        <!-- Delete Conversation -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+                <span
+                    style="background: #ef4444; color: white; border-radius: 4px; padding: 2px 6px; font-size: 0.75rem; font-weight: bold;">DELETE</span>
+                <code style="font-size: 0.9rem;">/api/v1/chat/conversations/&lt;id&gt;/</code>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Permanently delete a conversation.
+            </p>
+        </div>
+
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                All conversation API requests require a project API key: <code>Authorization: Bearer cpf_your_api_key</code>
+            </p>
+        </div>
+
+    </div>
+
+    <!-- ==================== USER MANAGEMENT (Admin Only) ==================== -->
+    {% if user.is_superuser %}
+    <div class="card mb-6" id="user-management">
+        <h2>6. User Management <span class="badge badge-info"
+                style="font-size: 0.7rem; vertical-align: middle;">Admin</span></h2>
+        <p style="margin-bottom: 1.5rem;">As an administrator, you have full control over user accounts and access.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Accessing User Management</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Navigate to <strong>Users</strong> in the sidebar
+            to view all registered users.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">User Actions</h3>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.75rem;">
+                <strong>View Users:</strong> See a list of all users with their email, status, and registration date.
+            </li>
+            <li style="margin-bottom: 0.75rem;">
+                <strong>Approve Users:</strong> New registrations may require approval. Toggle the "Active" checkbox to
+                enable/disable accounts.
+            </li>
+            <li style="margin-bottom: 0.75rem;">
+                <strong>Edit Users:</strong> Modify user details, change passwords, or update permissions.
+            </li>
+            <li style="margin-bottom: 0.75rem;">
+                <strong>Grant Admin Access:</strong> Check "Superuser status" to give a user administrator privileges.
+            </li>
+            <li style="margin-bottom: 0.75rem;">
+                <strong>Delete Users:</strong> Remove user accounts. This will also delete all their projects.
+            </li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">User Roles</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Role</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Capabilities</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Standard User</strong></td>
+                    <td style="padding: 0.75rem;">Create/manage own projects, generate API keys, view shared projects
+                    </td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Administrator</strong></td>
+                    <td style="padding: 0.75rem;">All standard user capabilities + manage all users + view all projects
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Warning Box -->
+        <div
+            style="background: rgba(239, 68, 68, 0.1); border-left: 4px solid var(--danger); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Warning:</strong> Deleting a user will permanently delete all their projects and indexed data.
+                This action cannot be undone.
+            </p>
+        </div>
+    </div>
+
+    <!-- ==================== SYSTEM SETTINGS (Admin Only) ==================== -->
+    <div class="card mb-6" id="system-settings">
+        <h2>7. System Settings <span class="badge badge-info"
+                style="font-size: 0.7rem; vertical-align: middle;">Admin</span></h2>
+        <p style="margin-bottom: 1.5rem;">Configure global system settings for CodePathfinder, including search infrastructure and skills repository integration.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Accessing System Settings</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Navigate to <strong>Settings → System</strong> in the sidebar to access the configuration panel.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Search Configuration</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Configure the Elasticsearch backend that powers semantic code search:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Setting</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Endpoint</strong></td>
+                    <td style="padding: 0.75rem;">Elasticsearch cluster URL (e.g., <code>https://cluster.es.region.aws.found.io:443</code>)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Cloud ID</strong></td>
+                    <td style="padding: 0.75rem;">Elastic Cloud deployment ID (alternative to endpoint URL)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Username/Password</strong></td>
+                    <td style="padding: 0.75rem;">Basic authentication credentials</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>API Key</strong></td>
+                    <td style="padding: 0.75rem;">Alternative to username/password authentication</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Index Name</strong></td>
+                    <td style="padding: 0.75rem;">Elasticsearch index for storing code embeddings</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>Inference ID</strong></td>
+                    <td style="padding: 0.75rem;">Model ID for generating semantic embeddings</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Skills Repository Configuration</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Configure a GitHub repository to sync AI agent skills from:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Setting</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Repository URL</strong></td>
+                    <td style="padding: 0.75rem;">GitHub repository URL containing skill definitions (e.g., <code>https://github.com/org/skills-repo</code>)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Access Token</strong></td>
+                    <td style="padding: 0.75rem;">GitHub Personal Access Token with <code>repo</code> scope for private repositories</td>
+                </tr>
+                <tr>
+                    <td style="padding: 0.75rem;"><strong>Branch</strong></td>
+                    <td style="padding: 0.75rem;">Branch to sync skills from (defaults to <code>main</code>)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Setting Up Skills Sync</h3>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Create a GitHub repository to store your skill definitions</li>
+            <li style="margin-bottom: 0.5rem;">Add <code>SKILL.md</code> files with YAML frontmatter for each skill</li>
+            <li style="margin-bottom: 0.5rem;">Generate a Personal Access Token with repository access</li>
+            <li style="margin-bottom: 0.5rem;">Enter the repository URL, token, and branch in System Settings</li>
+            <li style="margin-bottom: 0.5rem;">Click <strong>Save Settings</strong></li>
+            <li style="margin-bottom: 0.5rem;">Go to <strong>Skills</strong> and click <strong>Sync from GitHub</strong></li>
+        </ol>
+
+        <!-- Hint Box -->
+        <div
+            style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Hint:</strong> Use a private repository for your skills to keep proprietary prompt engineering secure. The sync process will import all <code>SKILL.md</code> files found in the repository.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ==================== TROUBLESHOOTING ==================== -->
+    <div class="card mb-6" id="troubleshooting">
+        <h2>{% if user.is_superuser %}8{% else %}6{% endif %}. Troubleshooting</h2>
+        <p style="margin-bottom: 1.5rem;">Common issues and how to resolve them.</p>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Indexer is stuck in "Running" status
+            </summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">This can happen if the indexer job
+                    crashes or loses connection.</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Click the <strong>Stop</strong> button to terminate the job</li>
+                    <li>Check the Console for any error messages</li>
+                    <li>Try running the indexer again</li>
+                    <li>If the problem persists, enable "Clean Index" and run again</li>
+                </ol>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Private repository indexing fails
+            </summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Private repositories require a valid
+                    GitHub Personal Access Token.</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Go to <a href="https://github.com/settings/tokens" target="_blank"
+                            style="color: var(--primary);">GitHub Settings &rarr; Developer settings &rarr; Personal
+                            access tokens</a></li>
+                    <li>Generate a new token with <code>repo</code> scope</li>
+                    <li>Edit your project and update the GitHub Token field</li>
+                    <li>Run the indexer again</li>
+                </ol>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Claude Desktop can't connect to
+                CodePathfinder</summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Check the following:</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Verify your API key is correct (generate a new one if unsure)</li>
+                    <li>Ensure the config JSON syntax is valid</li>
+                    <li>Restart Claude Desktop after making config changes</li>
+                    <li>Check Claude Desktop logs: <code>~/Library/Logs/Claude/</code> (macOS)</li>
+                </ol>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Search returns no results</summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">This can happen if:</p>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>The project hasn't finished indexing (check for "Completed" or "Watching" status)</li>
+                    <li>The project is toggled "Off" (check the Visibility switch next to the project name)</li>
+                    <li>The search query doesn't match any indexed content</li>
+                    <li>The index is empty or corrupted (try "Clean Index" and re-run)</li>
+                </ul>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">API returns "Invalid API key" error
+            </summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">The API key may be invalid or revoked.
+                </p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Check that the key starts with <code>cpf_</code></li>
+                    <li>Verify the key hasn't been revoked in the API Keys page</li>
+                    <li>Generate a new key if the old one is lost or compromised</li>
+                    <li>Make sure you're using the full key, not just the prefix</li>
+                </ol>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Rate limit exceeded (429 error)
+            </summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">API requests are limited to 60 per
+                    minute per API key.</p>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li>Wait a minute before retrying</li>
+                    <li>Reduce the frequency of API calls</li>
+                    <li>Contact support for higher rate limits if needed</li>
+                </ul>
+            </div>
+        </details>
+
+        <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+            <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Console shows "[ERROR]" messages
+            </summary>
+            <div style="padding: 0 1rem 1rem;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Common error causes:</p>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li><strong>Authentication failed:</strong> Check GitHub Token for private repos</li>
+                    <li><strong>Repository not found:</strong> Verify the repository URL is correct</li>
+                    <li><strong>Branch not found:</strong> Check that the specified branch exists</li>
+                    <li><strong>Elasticsearch error:</strong> Contact support if this persists</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+
+    <!-- ==================== NEED MORE HELP ==================== -->
+    <div class="card" style="background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%); color: white;">
+        <h2 style="color: white;">Need More Help?</h2>
+        <p style="margin-bottom: 1.5rem; opacity: 0.9;">Can't find what you're looking for? Our support team is here to
+            help.</p>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <a href="mailto:support@codepathfinder.com"
+                style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; color: var(--primary); border-radius: 8px; text-decoration: none; font-weight: 600;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                Email Support
+            </a>
+        </div>
+
+        <p style="margin-top: 1.5rem; font-size: 0.9rem; opacity: 0.8;">
+            <strong>Email:</strong> <a href="mailto:support@codepathfinder.com"
+                style="color: white;">support@codepathfinder.com</a>
+        </p>
+    </div>
+</div>
+
+<style>
+    /* Enhanced Tables */
+    .doc-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-bottom: 2rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--bg-secondary);
+    }
+
+    .doc-table th {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        font-weight: 600;
+        padding: 1rem;
+        text-align: left;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .doc-table td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        transition: background 0.2s ease;
+    }
+
+    .doc-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .doc-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .doc-icon-cell {
+        width: 60px;
+        text-align: center;
+    }
+
+    .doc-icon-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary);
+    }
+
+    .doc-action-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 0.25rem;
+    }
+
+    .doc-action-desc {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .doc-code-example {
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        font-size: 0.8rem;
+        background: var(--bg-primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        color: var(--primary);
+    }
+
+    /* Smooth scroll for anchor links */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* Details/Summary styling */
+    details summary {
+        list-style: none;
+    }
+
+    details summary::-webkit-details-marker {
+        display: none;
+    }
+
+    details summary::before {
+        content: '+ ';
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+
+    details[open] summary::before {
+        content: '- ';
+    }
+
+    /* Badge colors */
+    .badge-pending {
+        background: #fbbf24;
+        color: #000;
+    }
+
+    .badge-running {
+        background: #3b82f6;
+        color: #fff;
+    }
+
+    .badge-watching {
+        background: #8b5cf6;
+        color: #fff;
+    }
+
+    .badge-completed {
+        background: #22c55e;
+        color: #fff;
+    }
+
+    .badge-stopped {
+        background: #6b7280;
+        color: #fff;
+    }
+
+    .badge-failed {
+        background: #ef4444;
+        color: #fff;
+    }
+
+    .badge-info {
+        background: #3b82f6;
+        color: #fff;
+    }
+</style>
+{% endblock %}

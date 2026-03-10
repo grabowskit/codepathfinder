@@ -1,0 +1,935 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ skill.name }} - Skills - CodePathfinder{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<a href="{% url 'skill_list' %}" class="skill-detail-back">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    <span>Skills</span>
+</a>
+
+<!-- Page Header -->
+<div class="skill-detail-header">
+    <div class="skill-detail-title-section">
+        <div class="skill-detail-title-row">
+            <h1 class="skill-detail-title">{{ skill.name }}</h1>
+            {% if skill.is_curated %}
+            <span class="skill-detail-curated-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="currentColor" stroke="currentColor" stroke-width="1">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                <span>Curated</span>
+            </span>
+            {% endif %}
+            {% if skill.scope == 'personal' %}
+            <span class="skill-detail-personal-badge">Personal</span>
+            {% endif %}
+            {% if skill.is_hidden %}
+            <span class="skill-detail-hidden-badge">Hidden</span>
+            {% endif %}
+        </div>
+        <p class="skill-detail-description">{{ skill.description }}</p>
+    </div>
+
+    <div class="skill-detail-actions">
+        {% if can_fork %}
+        <form method="post" action="{% url 'skill_fork' skill.name %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="skill-detail-btn skill-detail-btn-secondary" title="Copy this skill to your personal skills">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="6" y1="3" x2="6" y2="15"></line>
+                    <circle cx="18" cy="6" r="3"></circle>
+                    <circle cx="6" cy="18" r="3"></circle>
+                    <path d="M18 9a9 9 0 0 1-9 9"></path>
+                </svg>
+                <span>Copy to My Skills</span>
+            </button>
+        </form>
+        {% endif %}
+        {% if can_edit %}
+        <a href="{% url 'skill_edit' skill.name %}" class="skill-detail-btn skill-detail-btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span>Edit</span>
+        </a>
+        {% endif %}
+        {% if user.is_superuser or skill.created_by == user %}
+        <button type="button" class="skill-detail-btn skill-detail-btn-danger" onclick="openDeleteSkillModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            <span>Delete</span>
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Metadata Bar -->
+<div class="skill-detail-meta-bar">
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span class="skill-detail-meta-value">{{ skill.usage_count }}</span>
+        <span class="skill-detail-meta-label">uses</span>
+    </div>
+
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        <span class="skill-detail-meta-value">{{ skill.allowed_tools|length }}</span>
+        <span class="skill-detail-meta-label">tools</span>
+    </div>
+
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="skill-detail-meta-value local-time" data-timestamp="{{ skill.updated_at|date:'c' }}">{{ skill.updated_at|date:"M d, Y" }}</span>
+    </div>
+
+    {% if skill.github_path %}
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+        <span class="skill-detail-meta-label">GitHub Synced</span>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Main Content -->
+<div class="skill-detail-content">
+    <!-- Left Column: Instructions -->
+    <div class="skill-detail-main">
+        <!-- Instructions Section -->
+        <div class="skill-detail-section">
+            <div class="skill-detail-section-header">
+                <h2 class="skill-detail-section-title">Instructions</h2>
+                <button onclick="copyInstructions()" class="skill-detail-copy-btn" title="Copy instructions">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy</span>
+                </button>
+            </div>
+            <pre id="instructions-content" class="skill-detail-code">{{ skill.instructions }}</pre>
+        </div>
+
+        <!-- Context Files Section -->
+        {% if skill.context_files %}
+        <div class="skill-detail-section">
+            <div class="skill-detail-section-header">
+                <h2 class="skill-detail-section-title">Context Files</h2>
+                <span class="skill-detail-count-badge">{{ skill.context_files|length }}</span>
+            </div>
+
+            <div class="skill-detail-files">
+                {% for filename, content in skill.context_files.items %}
+                <div class="skill-detail-file">
+                    <div class="skill-detail-file-header" onclick="toggleFileContent(this)">
+                        <div class="skill-detail-file-name">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                            <span>{{ filename }}</span>
+                        </div>
+                        <svg class="skill-detail-file-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <pre class="skill-detail-file-content">{{ content }}</pre>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Sidebar -->
+    <div class="skill-detail-sidebar">
+        <!-- Tags -->
+        {% if skill.tags %}
+        <div class="skill-detail-sidebar-section">
+            <h3 class="skill-detail-sidebar-title">Tags</h3>
+            <div class="skill-detail-tags">
+                {% for tag in skill.tags %}
+                <a href="{% url 'skill_list' %}?tag={{ tag }}" class="skill-detail-tag">{{ tag }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Allowed Tools -->
+        {% if skill.allowed_tools %}
+        <div class="skill-detail-sidebar-section">
+            <h3 class="skill-detail-sidebar-title">Allowed Tools</h3>
+            <div class="skill-detail-tools">
+                {% for tool in skill.allowed_tools %}
+                <span class="skill-detail-tool">{{ tool }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Info -->
+        <div class="skill-detail-sidebar-section">
+            <h3 class="skill-detail-sidebar-title">Quick Info</h3>
+            <div class="skill-detail-info-list">
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Created by</span>
+                    <span class="skill-detail-info-value">{% if skill.created_by %}{{ skill.created_by.username }}{% else %}System{% endif %}</span>
+                </div>
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Status</span>
+                    <span class="skill-detail-info-value">
+                        {% if skill.is_hidden %}
+                        <span class="skill-detail-status skill-detail-status-hidden">Hidden</span>
+                        {% else %}
+                        <span class="skill-detail-status skill-detail-status-active">Active</span>
+                        {% endif %}
+                    </span>
+                </div>
+                {% if skill.context_files %}
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Context files</span>
+                    <span class="skill-detail-info-value">{{ skill.context_files|length }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ========================================
+   Skill Detail Page - Clean Design
+   ======================================== */
+
+/* Back Navigation */
+.skill-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s ease;
+}
+
+.skill-detail-back:hover {
+    color: var(--primary);
+}
+
+/* Page Header */
+.skill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skill-detail-title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.skill-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+}
+
+.skill-detail-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+}
+
+.skill-detail-curated-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.skill-detail-personal-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.skill-detail-hidden-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.skill-detail-description {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 600px;
+}
+
+/* Action Buttons */
+.skill-detail-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.skill-detail-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    min-width: 100px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.skill-detail-btn-secondary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 6px rgba(8, 145, 178, 0.25);
+}
+
+.skill-detail-btn-secondary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.skill-detail-btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.skill-detail-btn-danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Metadata Bar */
+.skill-detail-meta-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.skill-detail-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skill-detail-meta-item svg {
+    color: var(--text-muted);
+}
+
+.skill-detail-meta-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.skill-detail-meta-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.skill-detail-meta-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--border-color);
+}
+
+/* Main Content Layout */
+.skill-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+}
+
+/* Main Column */
+.skill-detail-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+/* Section Styling */
+.skill-detail-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.skill-detail-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.skill-detail-section-title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.skill-detail-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Copy Button */
+.skill-detail-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.skill-detail-copy-btn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(8, 145, 178, 0.05);
+}
+
+/* Code Block */
+.skill-detail-code {
+    margin: 0;
+    padding: 1.25rem;
+    background: var(--bg-primary);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+/* Context Files */
+.skill-detail-files {
+    display: flex;
+    flex-direction: column;
+}
+
+.skill-detail-file {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skill-detail-file:last-child {
+    border-bottom: none;
+}
+
+.skill-detail-file-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.skill-detail-file-header:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.skill-detail-file-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--primary);
+}
+
+.skill-detail-file-name svg {
+    color: var(--text-muted);
+}
+
+.skill-detail-file-chevron {
+    color: var(--text-muted);
+    transition: transform 0.2s ease;
+}
+
+.skill-detail-file.expanded .skill-detail-file-chevron {
+    transform: rotate(180deg);
+}
+
+.skill-detail-file-content {
+    display: none;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    background: var(--bg-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+}
+
+.skill-detail-file.expanded .skill-detail-file-content {
+    display: block;
+}
+
+/* Sidebar */
+.skill-detail-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.skill-detail-sidebar-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+}
+
+.skill-detail-sidebar-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+/* Tags */
+.skill-detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-detail-tag {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.skill-detail-tag:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+/* Tools */
+.skill-detail-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-detail-tool {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-radius: var(--radius-sm);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+}
+
+/* Info List */
+.skill-detail-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.skill-detail-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.skill-detail-info-label {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.skill-detail-info-value {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.skill-detail-status {
+    display: inline-flex;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.skill-detail-status-active {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.skill-detail-status-hidden {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .skill-detail-content {
+        grid-template-columns: 1fr;
+    }
+
+    .skill-detail-sidebar {
+        order: -1;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .skill-detail-sidebar-section {
+        flex: 1;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 600px) {
+    .skill-detail-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .skill-detail-actions {
+        width: 100%;
+    }
+
+    .skill-detail-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .skill-detail-meta-bar {
+        gap: 1rem;
+    }
+
+    .skill-detail-meta-divider {
+        display: none;
+    }
+
+    .skill-detail-sidebar {
+        flex-direction: column;
+    }
+
+    .skill-detail-sidebar-section {
+        min-width: 100%;
+    }
+}
+</style>
+
+<script>
+function copyInstructions() {
+    const content = document.getElementById('instructions-content').textContent;
+    navigator.clipboard.writeText(content).then(() => {
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Copied!</span>
+        `;
+        btn.style.color = '#10b981';
+        btn.style.borderColor = '#10b981';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    });
+}
+
+function toggleFileContent(header) {
+    const file = header.closest('.skill-detail-file');
+    file.classList.toggle('expanded');
+}
+
+// Convert timestamps to local time
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.local-time').forEach(function (el) {
+        const date = new Date(el.dataset.timestamp);
+        const options = {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        };
+        el.textContent = date.toLocaleDateString(undefined, options);
+    });
+
+    // Auto-expand first context file if any exist
+    const firstFile = document.querySelector('.skill-detail-file');
+    if (firstFile) {
+        firstFile.classList.add('expanded');
+    }
+});
+
+// Delete Skill Modal Functions
+function openDeleteSkillModal() {
+    document.getElementById('deleteSkillModal').style.display = 'flex';
+}
+
+function closeDeleteSkillModal() {
+    document.getElementById('deleteSkillModal').style.display = 'none';
+}
+
+// Close modal on overlay click
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('deleteSkillModal');
+    if (e.target === modal) {
+        closeDeleteSkillModal();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteSkillModal();
+    }
+});
+</script>
+
+<!-- Delete Skill Modal -->
+{% if user.is_superuser or skill.created_by == user %}
+<div id="deleteSkillModal" class="skill-delete-modal-overlay" style="display: none;">
+    <div class="skill-delete-modal-content">
+        <div class="skill-delete-modal-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="skill-delete-modal-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3 class="skill-delete-modal-title">Delete Skill</h3>
+        </div>
+        <p class="skill-delete-modal-text">
+            Are you sure you want to delete <strong>"{{ skill.name }}"</strong>?
+        </p>
+        <p class="skill-delete-modal-subtext">
+            This skill will be hidden from the UI and APIs. {% if skill.github_path %}The skill will remain in the GitHub repository but marked as deleted, and can be restored later by an administrator.{% else %}It can be restored by an administrator if needed.{% endif %}
+        </p>
+        <div class="skill-delete-modal-actions">
+            <button type="button" class="skill-delete-modal-btn skill-delete-modal-btn-cancel" onclick="closeDeleteSkillModal()">
+                Cancel
+            </button>
+            <form method="post" action="{% url 'skill_delete' skill.name %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="skill-delete-modal-btn skill-delete-modal-btn-delete">
+                    Delete Skill
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Delete Skill Modal Styles */
+.skill-delete-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.skill-delete-modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.skill-delete-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.skill-delete-modal-icon {
+    color: #ef4444;
+    flex-shrink: 0;
+}
+
+.skill-delete-modal-title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.skill-delete-modal-text {
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+}
+
+.skill-delete-modal-subtext {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+}
+
+.skill-delete-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.skill-delete-modal-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.skill-delete-modal-btn-cancel {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.skill-delete-modal-btn-cancel:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.skill-delete-modal-btn-delete {
+    background: #ef4444;
+    color: white;
+}
+
+.skill-delete-modal-btn-delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+</style>
+{% endif %}
+{% endblock %}

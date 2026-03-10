@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if user_obj %}
+Edit Profile
+{% else %}
+Create User
+{% endif %}
+- CodePathfinder
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <!-- Page Header -->
+    <div class="profile-header">
+        <div class="profile-header-content">
+            <a href="{% url 'admin_user_list' %}" class="profile-back-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+                Back to Users
+            </a>
+            <h1 class="profile-title">
+                {% if user_obj %}
+                Profile Settings
+                {% else %}
+                Create User
+                {% endif %}
+            </h1>
+            <p class="profile-subtitle">
+                {% if user_obj %}
+                Manage your account information and integrations
+                {% else %}
+                Create a new user account
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" class="profile-form">
+        {% csrf_token %}
+
+        <div class="profile-layout">
+            <!-- Left Column - Profile Card -->
+            <div class="profile-sidebar">
+                {% if is_social_account %}
+                <!-- OAuth User Profile Card -->
+                <div class="profile-card">
+                    <div class="profile-card-visual">
+                        <div class="profile-avatar-container">
+                            {% if social_account.get_avatar_url %}
+                            <img src="{{ social_account.get_avatar_url }}" alt="Profile" class="profile-avatar-img">
+                            {% else %}
+                            <div class="profile-avatar-fallback">
+                                {{ form.username.value|make_list|first|upper }}
+                            </div>
+                            {% endif %}
+                            <div class="profile-avatar-badge" title="Signed in with Google">
+                                <svg viewBox="0 0 24 24" width="14" height="14">
+                                    <path fill="#4285F4"
+                                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                    <path fill="#34A853"
+                                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                    <path fill="#FBBC05"
+                                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                    <path fill="#EA4335"
+                                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="profile-identity">
+                            <h2 class="profile-name">
+                                {{ form.first_name.value|default:form.username.value }}
+                                {{ form.last_name.value|default:"" }}
+                            </h2>
+                            <p class="profile-email">
+                                {{ form.email.value }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="profile-card-divider"></div>
+
+                    <div class="profile-card-info">
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Account Type</span>
+                            <span class="profile-info-value">
+                                <span class="profile-badge profile-badge-google">
+                                    {{ social_account.provider|title }} SSO
+                                </span>
+                            </span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Username</span>
+                            <span class="profile-info-value profile-info-mono">
+                                @{{ form.username.value }}
+                            </span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Status</span>
+                            <span class="profile-info-value">
+                                {% if form.is_active.value %}
+                                <span class="profile-badge profile-badge-active">Active</span>
+                                {% else %}
+                                <span class="profile-badge profile-badge-pending">Pending</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <a href="https://myaccount.google.com/" target="_blank" class="profile-google-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                        Manage Google Account
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Hidden Inputs for OAuth users -->
+                <input type="hidden" name="username" value="{{ form.username.value }}">
+                <input type="hidden" name="email" value="{{ form.email.value }}">
+                <input type="hidden" name="first_name" value="{{ form.first_name.value|default:'' }}">
+                <input type="hidden" name="last_name" value="{{ form.last_name.value|default:'' }}">
+
+                {% else %}
+                <!-- Local User Profile Card -->
+                <div class="profile-card">
+                    <div class="profile-card-visual">
+                        <div class="profile-avatar-container">
+                            <div class="profile-avatar-fallback">
+                                {% if form.username.value %}
+                                {{ form.username.value|make_list|first|upper }}
+                                {% else %}
+                                U
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="profile-identity">
+                            {% if user_obj %}
+                            <h2 class="profile-name">
+                                {{ form.first_name.value|default:form.username.value }}
+                                {{ form.last_name.value|default:"" }}
+                            </h2>
+                            <p class="profile-email">
+                                {{ form.email.value|default:"No email set" }}
+                            </p>
+                            {% else %}
+                            <h2 class="profile-name">New User</h2>
+                            <p class="profile-email">Creating new account</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="profile-card-divider"></div>
+
+                    <div class="profile-card-info">
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Account Type</span>
+                            <span class="profile-info-value">
+                                <span class="profile-badge profile-badge-local">Local Account</span>
+                            </span>
+                        </div>
+                        {% if user_obj %}
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Username</span>
+                            <span class="profile-info-value profile-info-mono">
+                                @{{ form.username.value }}
+                            </span>
+                        </div>
+                        <div class="profile-info-row">
+                            <span class="profile-info-label">Status</span>
+                            <span class="profile-info-value">
+                                {% if form.is_active.value %}
+                                <span class="profile-badge profile-badge-active">Active</span>
+                                {% else %}
+                                <span class="profile-badge profile-badge-pending">Pending</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Column - Settings Sections -->
+            <div class="profile-main">
+                {% if is_social_account %}
+
+                {% if user.is_superuser %}
+                <!-- Admin Controls Section (OAuth Users) -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon profile-section-icon-admin">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">Admin Controls</h3>
+                            <p class="profile-section-desc">Manage user permissions and account status</p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        <div class="profile-toggle-group">
+                            <div class="profile-toggle-item">
+                                <div class="profile-toggle-info">
+                                    <span class="profile-toggle-label">Active Account</span>
+                                    <span class="profile-toggle-desc">User can log in and access the platform</span>
+                                </div>
+                                <label class="profile-switch">{{ form.is_active }}</label>
+                            </div>
+                            <div class="profile-toggle-item">
+                                <div class="profile-toggle-info">
+                                    <span class="profile-toggle-label">Administrator</span>
+                                    <span class="profile-toggle-desc">Full access to all settings and user
+                                        management</span>
+                                </div>
+                                <label class="profile-switch">{{ form.is_superuser }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- GitHub Integration Section (OAuth Users) -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon profile-section-icon-github">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">GitHub Integration</h3>
+                            <p class="profile-section-desc">Connect your GitHub account for private repository access
+                            </p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        <div class="profile-form-grid">
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    GitHub Username
+                                </label>
+                                {{ form.github_username }}
+                                {{ form.github_username.errors }}
+                                <span class="profile-form-hint">{{ form.github_username.help_text }}</span>
+                            </div>
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    Personal Access Token
+                                </label>
+                                {{ form.github_token }}
+                                {{ form.github_token.errors }}
+                                <span class="profile-form-hint">{{ form.github_token.help_text }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Local User Form (Else Block) -->
+                {% else %}
+
+                <!-- Account Details Section -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">Account Details</h3>
+                            <p class="profile-section-desc">Update your personal information</p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        <div class="profile-form-grid">
+                            {% for field in form %}
+                            {% if field.name != 'github_username' %}
+                            {% if field.name != 'github_token' %}
+                            {% if field.name != 'is_active' %}
+                            {% if field.name != 'is_superuser' %}
+                            <div
+                                class="profile-form-group {% if field.name == 'password' %}profile-form-group-full{% endif %}">
+                                <label class="profile-form-label" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}
+                                <div class="profile-form-errors">
+                                    {{ field.errors }}
+                                </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                <span class="profile-form-hint">
+                                    {{ field.help_text }}
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                {% if user.is_superuser %}
+                <!-- Admin Controls Section (Local Users) -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon profile-section-icon-admin">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">Admin Controls</h3>
+                            <p class="profile-section-desc">Manage user permissions and account status</p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        <div class="profile-toggle-group">
+                            <div class="profile-toggle-item">
+                                <div class="profile-toggle-info">
+                                    <span class="profile-toggle-label">Active Account</span>
+                                    <span class="profile-toggle-desc">User can log in and access the platform</span>
+                                </div>
+                                <label class="profile-switch">{{ form.is_active }}</label>
+                            </div>
+                            <div class="profile-toggle-item">
+                                <div class="profile-toggle-info">
+                                    <span class="profile-toggle-label">Administrator</span>
+                                    <span class="profile-toggle-desc">Full access to all settings and user
+                                        management</span>
+                                </div>
+                                <label class="profile-switch">{{ form.is_superuser }}</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- GitHub Integration Section (Local Users) -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon profile-section-icon-github">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">GitHub Integration</h3>
+                            <p class="profile-section-desc">Connect your GitHub account for private repository access
+                            </p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        <div class="profile-form-grid">
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    GitHub Username
+                                </label>
+                                {{ form.github_username }}
+                                {{ form.github_username.errors }}
+                                <span class="profile-form-hint">{{ form.github_username.help_text }}</span>
+                            </div>
+                            <div class="profile-form-group">
+                                <label class="profile-form-label">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    Personal Access Token
+                                </label>
+                                {{ form.github_token }}
+                                {{ form.github_token.errors }}
+                                <span class="profile-form-hint">{{ form.github_token.help_text }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Personal Skills Repository Section -->
+                {% if user_obj %}
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <div class="profile-section-icon profile-section-icon-skills">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="profile-section-title">Personal Skills Repository</h3>
+                            <p class="profile-section-desc">Connect a GitHub repository to sync your own personal skills</p>
+                        </div>
+                    </div>
+                    <div class="profile-section-content">
+                        {% if github_settings and github_settings.skills_repo_url %}
+                        <div class="profile-skills-status profile-skills-status-connected">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Connected: <strong>{{ github_settings.skills_repo_url }}</strong>
+                        </div>
+                        {% else %}
+                        <div class="profile-skills-status profile-skills-status-disconnected">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            No personal skills repository configured
+                        </div>
+                        {% endif %}
+                        <div class="profile-form-grid">
+                            <div class="profile-form-group profile-form-group-full">
+                                <label class="profile-form-label" for="id_skills_repo_url">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="currentColor">
+                                        <path
+                                            d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                                    </svg>
+                                    Personal Skills Repository URL
+                                </label>
+                                <input type="url" id="id_skills_repo_url" name="skills_repo_url"
+                                    class="form-control"
+                                    placeholder="https://github.com/username/my-skills"
+                                    value="{{ github_settings.skills_repo_url|default:'' }}">
+                                <span class="profile-form-hint">GitHub repository containing your personal SKILL.md files in a <code>skills/</code> directory. Requires your GitHub token above.</span>
+                            </div>
+                            <div class="profile-form-group">
+                                <label class="profile-form-label" for="id_skills_repo_branch">
+                                    Branch
+                                </label>
+                                <input type="text" id="id_skills_repo_branch" name="skills_repo_branch"
+                                    class="form-control"
+                                    placeholder="main"
+                                    value="{{ github_settings.skills_repo_branch|default:'main' }}">
+                                <span class="profile-form-hint">Branch to sync from (default: main)</span>
+                            </div>
+                        </div>
+                        {% if github_settings and github_settings.skills_repo_url %}
+                        <div class="profile-skills-sync-action">
+                            <form method="post" action="{% url 'skill_sync_personal' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary btn-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="23 4 23 10 17 10" />
+                                        <polyline points="1 20 1 14 7 14" />
+                                        <path
+                                            d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                    </svg>
+                                    Sync Personal Skills Now
+                                </button>
+                            </form>
+                            <a href="{% url 'skill_list' %}?scope=personal" class="btn btn-ghost btn-sm">
+                                View My Skills →
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Form Actions -->
+                <div class="profile-actions">
+                    <a href="{% url 'admin_user_list' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Style form inputs
+        const inputs = document.querySelectorAll('.profile-section input:not([type="checkbox"]):not([type="hidden"]), .profile-section select, .profile-section textarea');
+        inputs.forEach(input => input.classList.add('form-control'));
+
+        // Style checkboxes as toggle switches
+        const checkboxes = document.querySelectorAll('.profile-switch input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.classList.add('switch-toggle');
+        });
+    });
+</script>
+{% endblock %}

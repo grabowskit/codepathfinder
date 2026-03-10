@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Share {{ project.name }} - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1>Share Project: {{ project.name }}</h1>
+        <a href="{% url 'project_list' %}" class="btn btn-secondary">Back to Projects</a>
+    </div>
+
+    <div class="card mb-6">
+        <h2 class="text-xl font-bold mb-4">Add User</h2>
+        <form method="post" class="flex gap-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add">
+            <div class="flex-grow">
+                <select name="user_id" class="form-control" required>
+                    <option value="" disabled selected>Select a user to share with...</option>
+                    {% for user in available_users %}
+                    <option value="{{ user.pk }}">{{ user.username }} ({{ user.email }})</option>
+                    {% empty %}
+                    <option value="" disabled>No other users available</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" {% if not available_users %}disabled{% endif %}>Share</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2 class="text-xl font-bold mb-4">Who has access</h2>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Owner -->
+                    <tr>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold">{{ project.user.username }}</span>
+                                <span class="badge badge-info">Owner</span>
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <span class="text-secondary">Cannot remove</span>
+                        </td>
+                    </tr>
+
+                    <!-- Shared Users -->
+                    {% for user in project.shared_with.all %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td class="text-right">
+                            <form method="post" onsubmit="return confirm('Remove access for {{ user.username }}?');">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="remove">
+                                <input type="hidden" name="user_id" value="{{ user.pk }}">
+                                <button type="submit" class="text-danger btn-icon-only" title="Remove Access">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

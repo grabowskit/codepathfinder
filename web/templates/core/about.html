@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body_class %}about-page-body{% endblock %}
+
+{% block sidebar %}{% endblock %}{# Hide sidebar #}
+
+{% block title %}About Us - Code Pathfinder{% endblock %}
+
+{% block content %}
+{% include 'core/about_content.html' %}
+{% endblock %}
+
+{% block guest_layout %}
+{% include 'core/about_content.html' %}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Authorize {{ application.name }} - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>Authorize {{ application.name }}?</h1>
+        <p style="color: var(--text-secondary);">This application wants to access your CodePathfinder account</p>
+    </div>
+
+    <div class="card">
+        <div style="margin-bottom: 1.5rem;">
+            <h3 style="margin-bottom: 0.75rem; font-size: 1rem; font-weight: 500;">Requested Permissions</h3>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for scope in scopes_descriptions %}
+                <li
+                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 0.5rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    <span>{{ scope }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+                {% if field.is_hidden %}
+                    {{ field }}
+                {% endif %}
+            {% endfor %}
+            {{ form.errors }}
+            {{ form.non_field_errors }}
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <input type="submit" class="btn btn-secondary" style="flex: 1;" value="Cancel"/>
+                <input type="submit" class="btn btn-primary" style="flex: 1;" name="allow" value="Authorize"/>
+            </div>
+        </form>
+    </div>
+
+    <div class="text-center mt-4">
+        <p style="color: var(--text-secondary); font-size: 0.875rem;">
+            By authorizing, you allow {{ application.name }} to access your data in accordance with their terms of
+            service.
+        </p>
+    </div>
+</div>
+{% endblock content %}

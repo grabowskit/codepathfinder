@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Login Failed - CodePathfinder{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>Login Failed</h1>
+        <p style="color: var(--text-secondary);">Authentication Error</p>
+    </div>
+
+    <div class="card">
+        <div class="text-center">
+            <div style="margin-bottom: 1.5rem; color: #ef4444;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+
+            <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                We were unable to log you in with your third-party account (Access Denied).
+            </p>
+
+            <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                If you think this is an error, please reach out to <a href="mailto:support@codepathfinder.com"
+                    style="color: var(--primary-color); text-decoration: none;">support@codepathfinder.com</a>.
+            </p>
+
+            <div>
+                <a href="{% url 'account_login' %}" class="btn btn-outline-primary">Return to Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

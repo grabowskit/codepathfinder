@@ -1,0 +1,6 @@
+[submodule "chat"]
+	path = chat
+	url = https://github.com/danny-avila/LibreChat.git
+[submodule "indexer"]
+	path = indexer
+	url = https://github.com/elastic/semantic-code-search-indexer.git

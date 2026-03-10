@@ -1,0 +1,1716 @@
+{% extends 'base.html' %}
+
+{% block title %}Skills - CodePathfinder{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="skills-page-header">
+    <div class="skills-header-content">
+        <h1>Skills</h1>
+        <p class="skills-subtitle">AI agent skills for code analysis and development</p>
+    </div>
+    <div class="skills-header-actions">
+        {% if user.is_superuser %}
+        <form method="post" action="{% url 'skill_sync' %}" id="githubSyncForm" style="display: inline;">
+            {% csrf_token %}
+            <button type="button" class="skills-action-btn skills-action-secondary" title="Sync skills with GitHub" onclick="syncFromGithub()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+                </svg>
+                <span>Sync</span>
+            </button>
+        </form>
+        {% endif %}
+        <button type="button" class="skills-action-btn skills-action-secondary" title="Import Skills" onclick="showImportModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Import</span>
+        </button>
+        <form method="post" action="{% url 'skill_sync_personal' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="skills-action-btn skills-action-secondary" title="Sync your personal skills from GitHub">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 4 23 10 17 10" />
+                    <polyline points="1 20 1 14 7 14" />
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                </svg>
+                <span>Sync My Skills</span>
+            </button>
+        </form>
+        <a href="{% url 'skill_create' %}" class="skills-action-btn skills-action-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Create Skill</span>
+        </a>
+    </div>
+</div>
+
+<!-- Search & Filter Bar -->
+<form method="get" id="skillFilterForm" class="skills-filter-bar">
+    <div class="skills-search-wrapper">
+        <svg class="skills-search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" name="q" id="skillSearchInput" class="skills-search-input"
+               placeholder="Search skills..."
+               value="{{ search_query }}"
+               autocomplete="off">
+        <div id="skillSearchDropdown" class="skill-search-dropdown" style="display: none;"></div>
+    </div>
+
+    <div class="skills-filter-group">
+        <select name="scope" class="skills-filter-select" onchange="this.form.submit()">
+            <option value="all" {% if scope_filter == 'all' %}selected{% endif %}>All Skills</option>
+            <option value="global" {% if scope_filter == 'global' %}selected{% endif %}>Global Skills</option>
+            <option value="personal" {% if scope_filter == 'personal' %}selected{% endif %}>My Skills{% if personal_skill_count %} ({{ personal_skill_count }}){% endif %}</option>
+        </select>
+    </div>
+
+    <div class="skills-filter-group">
+        <select name="tag" class="skills-filter-select" onchange="this.form.submit()">
+            <option value="">All Tags</option>
+            <option value="curated" {% if tag_filter == 'curated' %}selected{% endif %}>Curated</option>
+            {% for tag in all_tags %}
+            <option value="{{ tag }}" {% if tag_filter == tag %}selected{% endif %}>{{ tag }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if search_query or curated_filter or tag_filter or scope_filter != 'all' %}
+    <a href="{% url 'skill_list' %}" class="skills-clear-btn" title="Clear filters">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        <span>Clear</span>
+    </a>
+    {% endif %}
+</form>
+
+<!-- Skills Table -->
+<div class="skills-table-container">
+    <table class="skills-table">
+        <thead>
+            <tr>
+                <th class="skills-th-name">
+                    <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if tag_filter %}tag={{ tag_filter|urlencode }}&{% endif %}sort=name&order={% if sort_by == 'name' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="skills-sort-link">
+                        Name
+                        {% if sort_by == 'name' %}
+                            <span class="skills-sort-indicator">
+                                {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                            </span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th class="skills-th-description">Description</th>
+                <th class="skills-th-tags">Tags</th>
+                <th class="skills-th-usage">
+                    <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if tag_filter %}tag={{ tag_filter|urlencode }}&{% endif %}sort=usage_count&order={% if sort_by == 'usage_count' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="skills-sort-link">
+                        Usage
+                        {% if sort_by == 'usage_count' %}
+                            <span class="skills-sort-indicator">
+                                {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                            </span>
+                        {% endif %}
+                    </a>
+                </th>
+                <th class="skills-th-actions"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for skill in skills %}
+            <tr class="skills-row {% if skill.is_hidden %}skills-row-hidden{% endif %}">
+                <td class="skills-cell-name">
+                    <a href="{% url 'skill_detail' skill.name %}" class="skills-name-link">
+                        {{ skill.name }}
+                    </a>
+                    <div class="skills-name-badges">
+                        {% if skill.is_curated %}
+                        <span class="skills-badge skills-badge-curated" title="Curated">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                                 fill="currentColor" stroke="currentColor" stroke-width="1">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                        </span>
+                        {% endif %}
+                        {% if skill.scope == 'personal' %}
+                        <span class="skills-badge skills-badge-personal" title="Your personal skill">Personal</span>
+                        {% endif %}
+                        {% if skill.is_hidden %}
+                        <span class="skills-badge skills-badge-hidden">Hidden</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="skills-cell-description">
+                    <span class="skills-description-text">{{ skill.description }}</span>
+                </td>
+                <td class="skills-cell-tags">
+                    <div class="skills-tags-list">
+                        {% for tag in skill.tags|slice:":3" %}
+                        <a href="?tag={{ tag }}" class="skills-tag">{{ tag }}</a>
+                        {% empty %}
+                        <span class="skills-no-tags">—</span>
+                        {% endfor %}
+                        {% if skill.tags|length > 3 %}
+                        <span class="skills-tag-more">+{{ skill.tags|length|add:"-3" }}</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td class="skills-cell-usage">
+                    <span class="skills-usage-count">{{ skill.usage_count }}</span>
+                </td>
+                <td class="skills-cell-actions">
+                    <div class="skills-actions-group">
+                        {% if user.is_superuser %}
+                        <button type="button" class="skills-icon-btn"
+                                onclick="toggleSkillVisibility({{ skill.id }}, {{ skill.is_hidden|yesno:'true,false' }})"
+                                title="{% if skill.is_hidden %}Show skill{% else %}Hide skill{% endif %}">
+                            {% if skill.is_hidden %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            {% else %}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            {% endif %}
+                        </button>
+                        {% endif %}
+                        {% if user.is_superuser or skill.scope == 'personal' and skill.created_by == user %}
+                        <a href="{% url 'skill_edit' skill.name %}" class="skills-icon-btn" title="Edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                            </svg>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="skills-empty-state">
+                    <div class="skills-empty-content">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                        <h3>No skills found</h3>
+                        <p>
+                            {% if search_query or curated_filter or tag_filter %}
+                            Try adjusting your search filters.
+                            {% else %}
+                            Get started by creating your first skill or syncing from GitHub.
+                            {% endif %}
+                        </p>
+                        <div class="skills-empty-actions">
+                            {% if user.is_superuser %}
+                            <form method="post" action="{% url 'skill_sync' %}" style="display: inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="skills-action-btn skills-action-secondary">Sync from GitHub</button>
+                            </form>
+                            {% endif %}
+                            <a href="{% url 'skill_create' %}" class="skills-action-btn skills-action-primary">Create Skill</a>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Import Modal -->
+<div id="importModal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="flex justify-between items-center mb-4">
+            <h3 style="margin: 0;">Import Skills</h3>
+            <button type="button" class="btn btn-icon-only" onclick="hideImportModal()" title="Close">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="import-tabs" style="display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+            <button type="button" class="import-tab active" data-tab="file" onclick="switchImportTab('file')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                From File
+            </button>
+            <button type="button" class="import-tab" data-tab="github" onclick="switchImportTab('github')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+                </svg>
+                From GitHub
+            </button>
+        </div>
+
+        <!-- Tab: From File -->
+        <div id="importTabFile" class="import-tab-content">
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Import skill definitions from text or Markdown files. At least one file must contain a valid skill definition.
+                Additional files can be included as context for the skill.
+            </p>
+
+            <!-- Drag & Drop Zone -->
+            <div id="dropZone" class="import-dropzone">
+                <div class="dropzone-content">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p class="dropzone-title">Drag & drop files here</p>
+                    <p class="dropzone-subtitle">or click to browse</p>
+                    <p class="dropzone-hint">Accepts .txt and .md files</p>
+                </div>
+                <input type="file" id="skillFileInput" multiple accept=".txt,.md,.markdown" style="display: none;">
+            </div>
+
+            <!-- Selected Files List -->
+            <div id="selectedFilesContainer" style="display: none; margin-top: 1rem;">
+                <div class="flex justify-between items-center mb-2">
+                    <span style="font-weight: 500; font-size: 0.9rem;">Selected Files</span>
+                    <button type="button" class="btn btn-sm" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;" onclick="clearSelectedFiles()">Clear All</button>
+                </div>
+                <div id="selectedFilesList" class="selected-files-list"></div>
+            </div>
+
+            <!-- Validation Status -->
+            <div id="validationStatus" style="display: none; margin-top: 1rem;"></div>
+
+            <div class="flex gap-2 justify-end mt-4" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="hideImportModal()">Cancel</button>
+                <button type="button" id="importBtn" class="btn btn-primary" onclick="importSkills()" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    Import
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab: From GitHub -->
+        <div id="importTabGithub" class="import-tab-content" style="display: none;">
+            <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                Import skills from any GitHub repository containing a <code>skills/</code> directory with SKILL.md files.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <div>
+                    <label for="ghRepoUrl" style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Repository URL</label>
+                    <input type="url" id="ghRepoUrl" class="form-control"
+                        placeholder="https://github.com/org/community-skills" style="width: 100%;">
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <div style="flex: 1;">
+                        <label for="ghBranch" style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Branch</label>
+                        <input type="text" id="ghBranch" class="form-control" value="main" placeholder="main" style="width: 100%;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-weight: 500; font-size: 0.85rem; display: block; margin-bottom: 0.25rem;">Import as</label>
+                        <div style="display: flex; gap: 0.75rem; padding-top: 0.35rem;">
+                            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                                <input type="radio" name="ghScope" value="personal" checked> Personal
+                            </label>
+                            {% if user.is_superuser %}
+                            <label style="font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                                <input type="radio" name="ghScope" value="global"> Global
+                            </label>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Discover Button -->
+            <div style="margin-top: 1rem;">
+                <button type="button" id="discoverBtn" class="btn btn-secondary" onclick="discoverSkills()" style="width: 100%;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Discover Skills
+                </button>
+            </div>
+
+            <!-- Discovered Skills Checklist -->
+            <div id="ghDiscoveredSkills" style="display: none; margin-top: 1rem;">
+                <div class="flex justify-between items-center mb-2">
+                    <span style="font-weight: 500; font-size: 0.9rem;" id="ghDiscoveredCount"></span>
+                    <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+                        <input type="checkbox" id="ghSelectAll" onchange="toggleAllGhSkills(this.checked)"> Select all
+                    </label>
+                </div>
+                <div id="ghSkillsList" class="gh-skills-list" style="max-height: 240px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 0.5rem;"></div>
+            </div>
+
+            <!-- GitHub Status Messages -->
+            <div id="ghStatus" style="display: none; margin-top: 1rem;"></div>
+
+            <div class="flex gap-2 justify-end mt-4" style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="hideImportModal()">Cancel</button>
+                <button type="button" id="ghImportBtn" class="btn btn-primary" onclick="importFromGitHub()" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Import Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ========================================
+   Skills Page - Clean Table Design
+   ======================================== */
+
+/* Page Header */
+.skills-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skills-header-content h1 {
+    margin: 0 0 0.25rem 0;
+}
+
+.skills-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.skills-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Action Buttons */
+.skills-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.skills-action-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.skills-action-secondary:hover {
+    background: var(--bg-card);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.skills-action-primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.skills-action-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* Filter Bar */
+.skills-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+}
+
+.skills-search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 320px;
+}
+
+.skills-search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.skills-search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
+}
+
+.skills-search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.1);
+}
+
+.skills-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.skills-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skills-filter-select {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    min-width: 130px;
+}
+
+.skills-filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.skills-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+}
+
+.skills-clear-btn:hover {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Table Container */
+.skills-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Table */
+.skills-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.skills-table thead {
+    background: var(--bg-secondary);
+}
+
+.skills-table th {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skills-th-name { width: 22%; }
+.skills-th-description { width: 40%; }
+.skills-th-tags { width: 20%; }
+.skills-th-usage { width: 8%; text-align: center; }
+.skills-th-actions { width: 10%; text-align: right; }
+
+/* Sortable Headers */
+.skills-sort-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    user-select: none;
+}
+
+.skills-sort-link:hover {
+    color: var(--text-primary);
+}
+
+.skills-sort-indicator {
+    color: var(--primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* Table Rows */
+.skills-row {
+    transition: background-color 0.15s ease;
+}
+
+.skills-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.skills-row:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skills-row-hidden {
+    opacity: 0.5;
+}
+
+.skills-row-hidden:hover {
+    opacity: 0.75;
+}
+
+/* Table Cells */
+.skills-table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.skills-cell-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skills-name-link {
+    font-weight: 500;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.skills-name-link:hover {
+    color: var(--primary);
+}
+
+.skills-name-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.skills-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.skills-badge-curated {
+    color: #eab308;
+    background: rgba(234, 179, 8, 0.1);
+}
+
+.skills-badge-hidden {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.skills-badge-personal {
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.skills-cell-description {
+    max-width: 400px;
+}
+
+.skills-description-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
+.skills-cell-tags {
+    max-width: 200px;
+}
+
+.skills-tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+.skills-tag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.skills-tag:hover {
+    background: rgba(59, 130, 246, 0.2);
+}
+
+.skills-tag-more {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.skills-no-tags {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.skills-cell-usage {
+    text-align: center;
+}
+
+.skills-usage-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.skills-cell-actions {
+    text-align: right;
+}
+
+.skills-actions-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+}
+
+.skills-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.skills-icon-btn:hover {
+    color: var(--primary);
+    background: rgba(8, 145, 178, 0.1);
+}
+
+/* Empty State */
+.skills-empty-state {
+    text-align: center;
+    padding: 4rem 2rem !important;
+}
+
+.skills-empty-content {
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+.skills-empty-content svg {
+    color: var(--text-muted);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.skills-empty-content h3 {
+    margin: 0 0 0.5rem;
+    color: var(--text-primary);
+}
+
+.skills-empty-content p {
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+}
+
+.skills-empty-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+/* Search Dropdown (kept from original) */
+.skill-search-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+}
+
+.skill-search-item {
+    padding: 0.75rem;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.15s ease;
+}
+
+.skill-search-item:last-child {
+    border-bottom: none;
+}
+
+.skill-search-item:hover {
+    background: var(--bg-secondary);
+}
+
+.skill-search-item-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+}
+
+.skill-search-item-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.skill-search-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Import Modal Styles */
+/* Import Modal Tabs */
+.import-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.import-tab:hover {
+    color: var(--text-primary);
+}
+
+.import-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+}
+
+/* GitHub Skills List */
+.gh-skill-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.gh-skill-item:last-child {
+    border-bottom: none;
+}
+
+.gh-skill-item label {
+    flex: 1;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.gh-skill-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.gh-skill-desc {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    margin-top: 0.15rem;
+}
+
+.gh-skill-tags {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.3rem;
+    flex-wrap: wrap;
+}
+
+.gh-skill-tags span {
+    font-size: 0.7rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.25rem;
+    color: var(--text-muted);
+}
+
+.import-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--bg-secondary);
+}
+
+.import-dropzone:hover,
+.import-dropzone.dragover {
+    border-color: var(--primary);
+    background: rgba(8, 145, 178, 0.05);
+}
+
+.import-dropzone.dragover {
+    transform: scale(1.01);
+}
+
+.dropzone-content {
+    pointer-events: none;
+}
+
+.dropzone-content svg {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.import-dropzone:hover .dropzone-content svg,
+.import-dropzone.dragover .dropzone-content svg {
+    color: var(--primary);
+}
+
+.dropzone-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.dropzone-subtitle {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 0.75rem 0;
+}
+
+.dropzone-hint {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin: 0;
+    opacity: 0.7;
+}
+
+.selected-files-list {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+}
+
+.selected-file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.selected-file-item:last-child {
+    border-bottom: none;
+}
+
+.selected-file-icon {
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.selected-file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.selected-file-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selected-file-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.selected-file-status {
+    flex-shrink: 0;
+}
+
+.selected-file-status.valid {
+    color: #10b981;
+}
+
+.selected-file-status.context {
+    color: var(--primary);
+}
+
+.selected-file-status.invalid {
+    color: #ef4444;
+}
+
+.selected-file-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+}
+
+.selected-file-remove:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.validation-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+}
+
+.validation-message.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.validation-message.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.validation-message.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .skills-page-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .skills-header-actions {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .skills-filter-bar {
+        flex-wrap: wrap;
+    }
+
+    .skills-search-wrapper {
+        max-width: none;
+        width: 100%;
+    }
+
+    .skills-th-description,
+    .skills-cell-description {
+        display: none;
+    }
+
+    .skills-th-name { width: 35%; }
+    .skills-th-tags { width: 30%; }
+    .skills-th-usage { width: 15%; }
+    .skills-th-actions { width: 20%; }
+}
+
+@media (max-width: 600px) {
+    .skills-th-tags,
+    .skills-cell-tags {
+        display: none;
+    }
+
+    .skills-th-name { width: 50%; }
+    .skills-th-usage { width: 20%; }
+    .skills-th-actions { width: 30%; }
+}
+</style>
+
+<script>
+let searchTimeout = null;
+let selectedFiles = [];
+
+// Typeahead Search
+document.getElementById('skillSearchInput').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    const dropdown = document.getElementById('skillSearchDropdown');
+    
+    if (!query || query.length < 2) {
+        dropdown.style.display = 'none';
+        return;
+    }
+    
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`{% url "skill_api_search" %}?q=${encodeURIComponent(query)}&limit=6`);
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            
+            if (data.skills.length === 0) {
+                dropdown.innerHTML = '<div class="skill-search-empty">No skills found</div>';
+            } else {
+                dropdown.innerHTML = data.skills.map(skill => `
+                    <div class="skill-search-item" onclick="navigateToSkill('${skill.name}')">
+                        <div class="skill-search-item-name">
+                            ${escapeHtml(skill.name)}
+                            ${skill.is_curated ? '<span class="badge" style="background: rgba(234, 179, 8, 0.1); color: #eab308; font-size: 0.7rem; margin-left: 0.5rem;">Curated</span>' : ''}
+                        </div>
+                        <div class="skill-search-item-desc">${escapeHtml(skill.description)}</div>
+                    </div>
+                `).join('');
+            }
+            
+            dropdown.style.display = 'block';
+        } catch (error) {
+            console.error('Search failed:', error);
+        }
+    }, 200);
+});
+
+// Hide dropdown on outside click
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.skills-search-wrapper')) {
+        document.getElementById('skillSearchDropdown').style.display = 'none';
+    }
+});
+
+// Submit form on Enter
+document.getElementById('skillSearchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        document.getElementById('skillSearchDropdown').style.display = 'none';
+    }
+});
+
+function navigateToSkill(name) {
+    window.location.href = `/skills/${name}/`;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// GitHub Sync (bi-directional)
+function syncFromGithub() {
+    if (confirm('Sync skills with GitHub?\n\n• Pull: Download new/updated skills from GitHub\n• Push: Upload all local skills to GitHub\n\nHidden skills will not be pushed to GitHub.')) {
+        document.getElementById('githubSyncForm').submit();
+    }
+}
+
+// Toggle Skill Visibility
+async function toggleSkillVisibility(skillId, isCurrentlyHidden) {
+    const action = isCurrentlyHidden ? 'show' : 'hide';
+    if (!confirm(`Are you sure you want to ${action} this skill? ${isCurrentlyHidden ? 'It will become visible in the UI and API.' : 'It will be hidden from the UI, API, and MCP.'}`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/skills/api/toggle-visibility/${skillId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            alert('Failed to update visibility: ' + (error.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Toggle visibility failed:', error);
+        alert('Failed to update visibility. Please try again.');
+    }
+}
+
+// ========================================================================
+// Import Modal & Drag/Drop
+// ========================================================================
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('skillFileInput');
+
+// Only set up event listeners if elements exist
+if (dropZone && fileInput) {
+    // Click to browse
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    // Drag events
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+}
+
+// Handle dropped/selected files
+function handleFiles(files) {
+    const validExtensions = ['.txt', '.md', '.markdown'];
+    
+    for (const file of files) {
+        const ext = '.' + file.name.split('.').pop().toLowerCase();
+        if (validExtensions.includes(ext)) {
+            // Check if already added
+            if (!selectedFiles.find(f => f.name === file.name)) {
+                selectedFiles.push(file);
+            }
+        }
+    }
+    
+    updateFilesList();
+    validateFiles();
+}
+
+// Update files list UI
+function updateFilesList() {
+    const container = document.getElementById('selectedFilesContainer');
+    const list = document.getElementById('selectedFilesList');
+    
+    if (selectedFiles.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'block';
+    list.innerHTML = selectedFiles.map((file, index) => `
+        <div class="selected-file-item" data-index="${index}">
+            <div class="selected-file-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </div>
+            <div class="selected-file-info">
+                <div class="selected-file-name">${escapeHtml(file.name)}</div>
+                <div class="selected-file-meta">${formatFileSize(file.size)}</div>
+            </div>
+            <div class="selected-file-status" id="fileStatus-${index}">
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Checking...</span>
+            </div>
+            <button type="button" class="selected-file-remove" onclick="removeFile(${index})" title="Remove">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+    `).join('');
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilesList();
+    validateFiles();
+}
+
+function clearSelectedFiles() {
+    selectedFiles = [];
+    fileInput.value = '';
+    updateFilesList();
+    validateFiles();
+}
+
+// Validate files for skill content
+async function validateFiles() {
+    const statusDiv = document.getElementById('validationStatus');
+    const importBtn = document.getElementById('importBtn');
+    
+    if (selectedFiles.length === 0) {
+        statusDiv.style.display = 'none';
+        importBtn.disabled = true;
+        return;
+    }
+    
+    let skillFileCount = 0;
+    let contextFileCount = 0;
+    
+    // Check each file
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const content = await readFileContent(file);
+        const isSkillFile = detectSkillFormat(content, file.name);
+        
+        const statusEl = document.getElementById(`fileStatus-${i}`);
+        if (statusEl) {
+            if (isSkillFile) {
+                skillFileCount++;
+                statusEl.innerHTML = '<span class="selected-file-status valid" title="Valid skill definition">✓ Skill</span>';
+            } else {
+                contextFileCount++;
+                statusEl.innerHTML = '<span class="selected-file-status context" title="Will be used as context">Context</span>';
+            }
+        }
+    }
+    
+    // Update validation message
+    statusDiv.style.display = 'block';
+    if (skillFileCount > 0) {
+        statusDiv.innerHTML = `
+            <div class="validation-message success">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Found ${skillFileCount} skill definition${skillFileCount > 1 ? 's' : ''}${contextFileCount > 0 ? ` and ${contextFileCount} context file${contextFileCount > 1 ? 's' : ''}` : ''}</span>
+            </div>
+        `;
+        importBtn.disabled = false;
+    } else {
+        statusDiv.innerHTML = `
+            <div class="validation-message warning">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                <span>No valid skill definitions found. Files need a name, description, and instructions section.</span>
+            </div>
+        `;
+        importBtn.disabled = true;
+    }
+}
+
+function readFileContent(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = () => resolve('');
+        reader.readAsText(file);
+    });
+}
+
+function detectSkillFormat(content, filename) {
+    // Check for skill definition patterns
+    const lowerContent = content.toLowerCase();
+    
+    // Check for required sections/fields
+    const hasName = /^#\s+\w+|name\s*[:=]/mi.test(content);
+    const hasDescription = /description\s*[:=]|^##\s*description/mi.test(content);
+    const hasInstructions = /instructions?\s*[:=]|^##\s*instructions?/mi.test(content);
+    
+    // Also check for YAML-like skill format
+    const hasYamlName = /^name\s*:/m.test(content);
+    const hasYamlDesc = /^description\s*:/m.test(content);
+    const hasYamlInstr = /^instructions?\s*:/m.test(content);
+    
+    // Markdown skill format: # Name, ## Description, ## Instructions
+    const mdNameMatch = content.match(/^#\s+(.+)/m);
+    const hasMdSections = /^##\s+description/mi.test(content) && /^##\s+instructions?/mi.test(content);
+    
+    return (hasName && hasDescription && hasInstructions) || 
+           (hasYamlName && hasYamlDesc && hasYamlInstr) ||
+           (mdNameMatch && hasMdSections);
+}
+
+function showImportModal() {
+    const modal = document.getElementById('importModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Reset file tab state
+        selectedFiles = [];
+        if (fileInput) fileInput.value = '';
+        updateFilesList();
+        const validationStatus = document.getElementById('validationStatus');
+        if (validationStatus) validationStatus.style.display = 'none';
+        const importBtn = document.getElementById('importBtn');
+        if (importBtn) importBtn.disabled = true;
+        // Reset GitHub tab state
+        document.getElementById('ghDiscoveredSkills').style.display = 'none';
+        document.getElementById('ghStatus').style.display = 'none';
+        document.getElementById('ghImportBtn').disabled = true;
+        discoveredSkills = [];
+        // Default to file tab
+        switchImportTab('file');
+    }
+}
+
+function hideImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+}
+
+async function importSkills() {
+    if (selectedFiles.length === 0) {
+        alert('Please select at least one file to import.');
+        return;
+    }
+    
+    const importBtn = document.getElementById('importBtn');
+    importBtn.disabled = true;
+    importBtn.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+            style="margin-right: 0.5rem; animation: spin 1s linear infinite;">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+        </svg>
+        Importing...
+    `;
+    
+    // Build form data
+    const formData = new FormData();
+    for (const file of selectedFiles) {
+        formData.append('files', file);
+    }
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    try {
+        const response = await fetch('{% url "skill_import" %}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(`Successfully imported ${result.imported} skill(s)!`);
+            hideImportModal();
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            alert('Import failed: ' + (error.message || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Import error:', error);
+        alert('Import failed. Please try again.');
+    } finally {
+        importBtn.disabled = false;
+        importBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Import
+        `;
+    }
+}
+
+// === GitHub Import Tab ===
+
+function switchImportTab(tab) {
+    document.querySelectorAll('.import-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector(`.import-tab[data-tab="${tab}"]`).classList.add('active');
+    document.getElementById('importTabFile').style.display = tab === 'file' ? '' : 'none';
+    document.getElementById('importTabGithub').style.display = tab === 'github' ? '' : 'none';
+}
+
+let discoveredSkills = [];
+
+async function discoverSkills() {
+    const repoUrl = document.getElementById('ghRepoUrl').value.trim();
+    if (!repoUrl) {
+        showGhStatus('Please enter a repository URL.', 'error');
+        return;
+    }
+
+    const branch = document.getElementById('ghBranch').value.trim() || 'main';
+    const discoverBtn = document.getElementById('discoverBtn');
+    const origHtml = discoverBtn.innerHTML;
+    discoverBtn.disabled = true;
+    discoverBtn.textContent = 'Discovering...';
+
+    // Reset
+    document.getElementById('ghDiscoveredSkills').style.display = 'none';
+    document.getElementById('ghImportBtn').disabled = true;
+    showGhStatus('', '');
+
+    try {
+        const response = await fetch('{% url "skill_import_external" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ action: 'discover', repo_url: repoUrl, branch: branch })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            showGhStatus(data.error || 'Discovery failed.', 'error');
+            return;
+        }
+
+        discoveredSkills = data.skills || [];
+        if (discoveredSkills.length === 0) {
+            showGhStatus('No skills found in this repository.', 'warning');
+            return;
+        }
+
+        renderDiscoveredSkills();
+    } catch (err) {
+        showGhStatus('Network error. Please try again.', 'error');
+    } finally {
+        discoverBtn.disabled = false;
+        discoverBtn.innerHTML = origHtml;
+    }
+}
+
+function renderDiscoveredSkills() {
+    const container = document.getElementById('ghDiscoveredSkills');
+    const list = document.getElementById('ghSkillsList');
+    const countEl = document.getElementById('ghDiscoveredCount');
+
+    countEl.textContent = `${discoveredSkills.length} skill(s) found`;
+    list.innerHTML = discoveredSkills.map((skill, i) => `
+        <div class="gh-skill-item">
+            <input type="checkbox" id="ghSkill_${i}" value="${skill.name}" onchange="updateGhImportBtn()" style="margin-top: 0.2rem;">
+            <label for="ghSkill_${i}">
+                <div class="gh-skill-name">${skill.name}</div>
+                <div class="gh-skill-desc">${skill.description}</div>
+                ${skill.tags && skill.tags.length ? `<div class="gh-skill-tags">${skill.tags.map(t => `<span>${t}</span>`).join('')}</div>` : ''}
+            </label>
+        </div>
+    `).join('');
+
+    document.getElementById('ghSelectAll').checked = false;
+    container.style.display = '';
+    updateGhImportBtn();
+}
+
+function toggleAllGhSkills(checked) {
+    document.querySelectorAll('#ghSkillsList input[type="checkbox"]').forEach(cb => cb.checked = checked);
+    updateGhImportBtn();
+}
+
+function updateGhImportBtn() {
+    const checked = document.querySelectorAll('#ghSkillsList input[type="checkbox"]:checked');
+    document.getElementById('ghImportBtn').disabled = checked.length === 0;
+}
+
+async function importFromGitHub() {
+    const repoUrl = document.getElementById('ghRepoUrl').value.trim();
+    const branch = document.getElementById('ghBranch').value.trim() || 'main';
+    const scope = document.querySelector('input[name="ghScope"]:checked')?.value || 'personal';
+    const selectedNames = Array.from(document.querySelectorAll('#ghSkillsList input[type="checkbox"]:checked')).map(cb => cb.value);
+
+    if (selectedNames.length === 0) return;
+
+    const importBtn = document.getElementById('ghImportBtn');
+    importBtn.disabled = true;
+    importBtn.textContent = 'Importing...';
+
+    try {
+        const response = await fetch('{% url "skill_import_external" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({
+                action: 'import',
+                repo_url: repoUrl,
+                branch: branch,
+                skill_names: selectedNames,
+                scope: scope,
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            showGhStatus(data.error || 'Import failed.', 'error');
+            return;
+        }
+
+        const msgs = [];
+        if (data.imported && data.imported.length) msgs.push(`Imported: ${data.imported.join(', ')}`);
+        if (data.skipped && data.skipped.length) msgs.push(`Not found: ${data.skipped.join(', ')}`);
+        if (data.errors && data.errors.length) msgs.push(`Errors: ${data.errors.join('; ')}`);
+
+        if (data.imported && data.imported.length) {
+            showGhStatus(msgs.join(' | '), 'success');
+            setTimeout(() => {
+                hideImportModal();
+                window.location.reload();
+            }, 1200);
+        } else {
+            showGhStatus(msgs.join(' | '), 'warning');
+        }
+    } catch (err) {
+        showGhStatus('Network error. Please try again.', 'error');
+    } finally {
+        importBtn.disabled = false;
+        importBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Import Selected
+        `;
+    }
+}
+
+function showGhStatus(msg, type) {
+    const el = document.getElementById('ghStatus');
+    if (!msg) { el.style.display = 'none'; return; }
+    const colors = { error: 'var(--danger, #dc3545)', warning: 'var(--warning, #ffc107)', success: 'var(--success, #28a745)' };
+    el.style.display = '';
+    el.style.color = colors[type] || 'var(--text-secondary)';
+    el.style.fontSize = '0.85rem';
+    el.textContent = msg;
+}
+
+// Close modal on backdrop click
+const importModalEl = document.getElementById('importModal');
+if (importModalEl) {
+    importModalEl.addEventListener('click', function(e) {
+        if (e.target === this) {
+            hideImportModal();
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Sign Out" %} - CodePathfinder{% endblock %}
+
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: center; min-height: 60vh;">
+    <div class="card" style="max-width: 450px; width: 100%; text-align: center; padding: 2.5rem;">
+        <h1 style="margin-bottom: 0.5rem;">{% trans "Sign Out" %}</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">{% trans "Are you sure you want to sign out?" %}
+        </p>
+
+        <form method="post" action="{% url "account_logout" %}">
+            {% csrf_token %}
+            {% if redirect_field_value %}
+            <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+            {% endif %}
+            <div style="display: flex; gap: 1rem; justify-content: center;">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">{% trans "Cancel" %}</button>
+                <button type="submit" class="btn btn-danger">{% trans "Sign Out" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,261 @@
+services:
+  db:
+    restart: always
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=codepathfinder
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+
+  elasticsearch:
+    restart: always
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.enrollment.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - xpack.ml.max_machine_memory_percent=60
+      - "ES_JAVA_OPTS=-Xms4g -Xmx4g"
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD:-changeme}
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f -u elastic:${ELASTICSEARCH_PASSWORD:-changeme} http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    restart: always
+    image: docker.elastic.co/kibana/kibana:9.3.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_ACCOUNT_TOKEN:-AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbjo3U1p6Mm0ybFJNQ1hYSWxpakkxcUln}
+      - xpack.security.enabled=true
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_started
+
+  web:
+    restart: always
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    expose:
+      - "8000"
+    volumes:
+      # - ./web:/app:delegated  # Uncomment for live reload during development
+      - /var/run/docker.sock:/var/run/docker.sock  # Required for local indexer job execution
+    environment:
+      - DEBUG=1
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgres://postgres:postgres@db:5432/codepathfinder
+      - DJANGO_SECRET_KEY=dev_secret_key
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - ELASTICSEARCH_ENDPOINT=${ELASTICSEARCH_ENDPOINT:-http://elasticsearch:9200}
+      - ELASTICSEARCH_USER=${ELASTICSEARCH_USER:-elastic}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-changeme}
+      - ELASTICSEARCH_API_KEY=${ELASTICSEARCH_API_KEY}
+      - ELASTICSEARCH_INDEX=${ELASTICSEARCH_INDEX:-code-chunks}
+      - ELASTICSEARCH_INFERENCE_ID=${ELASTICSEARCH_INFERENCE_ID:-.elser-2-elasticsearch}
+      - KIBANA_HOST=http://kibana:5601
+      - CPF_INTERNAL_SERVICE_SECRET=${CPF_INTERNAL_SERVICE_SECRET:-default_internal_secret_change_me}
+      # LibreChat integration - HTTPS on port 3443 via nginx
+      - LIBRECHAT_EXTERNAL_URL=${LIBRECHAT_EXTERNAL_URL:-https://localhost:3443}
+      # OIDC private key for signing ID tokens issued to LibreChat
+      - OIDC_RSA_PRIVATE_KEY=${OIDC_RSA_PRIVATE_KEY}
+      # Public-facing OIDC issuer URL — pins all discovery doc endpoints to the public host
+      - OIDC_ISS_ENDPOINT=https://localhost:8443/o
+      # Internal OTel instrumentation — sends directly to otel-collector (no auth needed)
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=codepathfinder-web
+      - CPF_PROJECT_ID=12
+    networks:
+      - default
+      - cpf-net
+    depends_on:
+      db:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80"
+      - "8443:443"
+      - "3443:3443"  # LibreChat HTTPS
+    volumes:
+      - ./nginx/certs:/etc/nginx/certs
+    depends_on:
+      - web
+      - librechat
+
+  indexer:
+    restart: always
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+      target: production
+    #    volumes:
+    #      - ./indexer:/app
+    #      - /app/node_modules
+    #      - /app/dist
+    environment:
+      - ELASTICSEARCH_ENDPOINT=${ELASTICSEARCH_ENDPOINT:-http://elasticsearch:9200}
+      - ELASTICSEARCH_CLOUD_ID=${ELASTICSEARCH_CLOUD_ID}
+      - ELASTICSEARCH_USER=${ELASTICSEARCH_USER:-elastic}
+      - ELASTICSEARCH_PASSWORD=${ELASTICSEARCH_PASSWORD:-changeme}
+      - ELASTICSEARCH_API_KEY=${ELASTICSEARCH_API_KEY}
+      - ELASTICSEARCH_INDEX=${ELASTICSEARCH_INDEX:-code-chunks}
+      - ELASTICSEARCH_INFERENCE_ID=${ELASTICSEARCH_INFERENCE_ID:-.elser-2-elasticsearch}
+      # Internal OTel instrumentation — sends directly to otel-collector (no auth needed)
+      - OTEL_LOGGING_ENABLED=true
+      - OTEL_SERVICE_NAME=codepathfinder-indexer
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_RESOURCE_ATTRIBUTES=cpf.project.id=12
+    command: [ "index" ]
+    depends_on:
+      web:
+        condition: service_started
+      elasticsearch:
+        condition: service_started
+
+  # ===========================================
+  # OTel Collector (customer telemetry ingest)
+  # ===========================================
+
+  otel-collector:
+    restart: always
+    image: otel/opentelemetry-collector-contrib:0.113.0
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    environment:
+      - ELASTICSEARCH_ENDPOINT=${ELASTICSEARCH_ENDPOINT:-http://elasticsearch:9200}
+      # Dedicated API key with write-only access to customer telemetry indices.
+      # Generate with: scripts/create_otel_es_api_key.sh (or see LOCAL_DEV.md)
+      - ELASTICSEARCH_API_KEY=${OTEL_COLLECTOR_ES_API_KEY}
+    ports:
+      # Only expose internally — auth is enforced by the Django proxy (web/otel_ingest/)
+      - "4317:4317"  # OTLP gRPC (internal)
+      - "4318:4318"  # OTLP HTTP (internal)
+      - "13133:13133"  # Health check
+    depends_on:
+      elasticsearch:
+        condition: service_started
+
+  # ===========================================
+  # LibreChat Services
+  # ===========================================
+
+  mongodb:
+    restart: always
+    image: mongo:8.0
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
+  meilisearch:
+    restart: always
+    image: getmeili/meilisearch:latest
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterkey}
+    volumes:
+      - meilisearch_data:/meili_data
+    ports:
+      - "7700:7700"
+
+  librechat:
+    restart: always
+    build:
+      context: ./chat
+      dockerfile: Dockerfile
+    ports:
+      - "3080:3080"
+    extra_hosts:
+      # Allow librechat to reach https://localhost:8443 (nginx→Django) for OIDC token exchange
+      - "localhost:host-gateway"
+    volumes:
+      # Static config - LLM providers are configured directly in LibreChat
+      - ./chat-config/librechat.yaml:/app/librechat.yaml:ro
+      # mkcert CA cert so Node trusts localhost:8443 for OIDC token exchange (dev only)
+      - ./nginx/certs/rootCA.pem:/etc/ssl/certs/mkcert-rootCA.pem:ro
+    env_file:
+      - ./chat-config/.env
+    environment:
+      - HOST=0.0.0.0
+      - MONGO_URI=mongodb://mongodb:27017/librechat
+      - MEILI_HOST=http://meilisearch:7700
+      # Trust the mkcert CA so OIDC HTTPS calls to localhost:8443 work (dev only).
+      # NODE_EXTRA_CA_CERTS is not picked up by undici (used by openid-client), so we
+      # disable strict TLS verification for this local-dev-only container instead.
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - NODE_EXTRA_CA_CERTS=/etc/ssl/certs/mkcert-rootCA.pem
+      # Shared secret for MCP authentication
+      - CPF_INTERNAL_SERVICE_SECRET=${CPF_INTERNAL_SERVICE_SECRET:-default_internal_secret_change_me}
+      # OIDC — CodePathfinder is the identity provider, LibreChat is the OIDC client
+      - ALLOW_REGISTRATION=false
+      - ALLOW_EMAIL_LOGIN=false
+      - ALLOW_SOCIAL_LOGIN=true
+      - ALLOW_SOCIAL_REGISTRATION=true
+      - DOMAIN_CLIENT=https://localhost:3443
+      - DOMAIN_SERVER=https://localhost:3443
+      - OPENID_ISSUER=https://localhost:8443/o
+      - OPENID_CLIENT_ID=${OPENID_CLIENT_ID}
+      - OPENID_CLIENT_SECRET=${OPENID_CLIENT_SECRET}
+      - OPENID_SESSION_SECRET=${OPENID_SESSION_SECRET:-change_me_openid_session_secret}
+      - OPENID_CALLBACK_URL=/oauth/openid/callback
+      - OPENID_SCOPE=openid profile email
+      - OPENID_BUTTON_LABEL=Log in with CodePathfinder
+      - OPENID_AUTO_REDIRECT=true
+      - OPENID_USE_END_SESSION_ENDPOINT=true
+      - OPENID_POST_LOGOUT_REDIRECT_URI=https://localhost:8443
+      # LLM API keys - configured via chat-config/.env (env_file above)
+      - AZURE_API_KEY=${AZURE_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      # AWS Bedrock
+      - BEDROCK_AWS_DEFAULT_REGION=${BEDROCK_AWS_DEFAULT_REGION:-us-east-2}
+      - BEDROCK_AWS_ACCESS_KEY_ID=${BEDROCK_AWS_ACCESS_KEY_ID:-}
+      - BEDROCK_AWS_SECRET_ACCESS_KEY=${BEDROCK_AWS_SECRET_ACCESS_KEY:-}
+    networks:
+      - default
+      - cpf-net
+    depends_on:
+      - mongodb
+      - meilisearch
+      - web
+
+volumes:
+  postgres_data:
+    external: true
+    name: pathfinder_postgres_data
+  elasticsearch_data:
+    external: true
+    name: pathfinder_elasticsearch_data
+  mongodb_data:
+  meilisearch_data:
+
+networks:
+  cpf-net:
+    external: true
+    name: cpf-librechat

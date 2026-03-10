@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}New Project - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 700px;">
+    <div class="mb-4">
+        <h1>Create Pathfinder</h1>
+        <p style="color: var(--text-secondary);">Configure a new repository indexing task</p>
+    </div>
+
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="mb-4">
+                <h3 class="mb-3" style="font-size: 1.1rem; color: var(--text-secondary);">Basic Information</h3>
+                <div class="form-group">
+                    <label class="form-label">{{ form.name.label }} <span style="color: red;">*</span></label>
+                    {{ form.name.errors }}
+                    {{ form.name }}
+                    {% if form.name.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.name.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.repository_url.label }} <span style="color: red;">*</span></label>
+                    {{ form.repository_url.errors }}
+                    {{ form.repository_url }}
+                    {% if form.repository_url.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.repository_url.help_text }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Repository Configuration -->
+            <div class="mb-4">
+                <h3 class="mb-3" style="font-size: 1.1rem; color: var(--text-secondary);">Repository Configuration</h3>
+                <div class="form-group">
+                    <label class="form-label">{{ form.github_token.label }}</label>
+                    {{ form.github_token.errors }}
+                    {{ form.github_token }}
+                    {% if form.github_token.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.github_token.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.branch.label }}</label>
+                    {{ form.branch.errors }}
+                    {{ form.branch }}
+                    {% if form.branch.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.branch.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">{{ form.custom_index_name.label }}</label>
+                    {{ form.custom_index_name.errors }}
+                    {{ form.custom_index_name }}
+                    {% if form.custom_index_name.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.custom_index_name.help_text }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Indexer Options -->
+            <div class="mb-4">
+                <h3 class="mb-3" style="font-size: 1.1rem; color: var(--text-secondary);">Indexer Options</h3>
+
+                <div class="form-check mb-3">
+                    {{ form.clean_index }}
+                    <label class="form-check-label" for="{{ form.clean_index.id_for_label }}">
+                        {{ form.clean_index.label }}
+                    </label>
+                    {% if form.clean_index.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.clean_index.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form.pull_before_index }}
+                    <label class="form-check-label" for="{{ form.pull_before_index.id_for_label }}">
+                        {{ form.pull_before_index.label }}
+                    </label>
+                    {% if form.pull_before_index.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.pull_before_index.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form.watch_mode }}
+                    <label class="form-check-label" for="{{ form.watch_mode.id_for_label }}">
+                        {{ form.watch_mode.label }}
+                    </label>
+                    {% if form.watch_mode.help_text %}
+                    <small class="help-text" style="display: block; margin-top: 0.25rem; margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem;">{{ form.watch_mode.help_text }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="flex gap-4 mt-4">
+                <button type="submit" name="save" class="btn btn-secondary" style="flex: 1;">Save Draft</button>
+                <button type="submit" name="save_run" class="btn btn-primary" style="flex: 1;">Save & Run Now</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
