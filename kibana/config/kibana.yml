@@ -11,8 +11,8 @@ elasticsearch.hosts: ["http://elasticsearch:9200"]
 # Encryption keys for saved objects and connectors
 # These keys are required for connectors, actions, and encrypted saved objects to work
 # Generate new keys with: openssl rand -hex 32
-xpack.encryptedSavedObjects.encryptionKey: "ff13f4fc16a1e6526e463f5e8deb668e43c4e4097eebc795d6c3e64f3d58f4ce"
-xpack.reporting.encryptionKey: "e1f28e4a25c204f213de64b2761662774e11bf2666798e5d6ca10cccc0f0c9df"
+xpack.encryptedSavedObjects.encryptionKey: "REPLACE_WITH_32_BYTE_HEX_STRING_openssl_rand_hex_32"
+xpack.reporting.encryptionKey: "REPLACE_WITH_32_BYTE_HEX_STRING_openssl_rand_hex_32"
 
 # Note: Security is configured via environment variables in docker-compose.yml
 # Note: Agent Builder is enabled via Advanced Settings API, not directly in kibana.yml
