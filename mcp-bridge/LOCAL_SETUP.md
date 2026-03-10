@@ -35,7 +35,7 @@ Replace the entire `codepathfinder-tester` section with:
   "mcpServers": {
     "codepathfinder-tester": {
       "command": "node",
-      "args": ["/Users/grabowskit/dev/pathfinder/mcp-bridge/build/index.js"],
+      "args": ["/path/to/codepathfinder/mcp-bridge/build/index.js"],
       "env": {
         "CODEPATHFINDER_API_KEY": "cpf_YOUR_ACTUAL_KEY_HERE",
         "CODEPATHFINDER_API_ENDPOINT": "https://localhost:8443/api/v1/mcp/tools/call/",
@@ -120,7 +120,7 @@ Once connected, you can use these 6 tools:
 You can test the bridge outside of Claude Desktop:
 
 ```bash
-cd /Users/grabowskit/dev/pathfinder/mcp-bridge
+cd /path/to/codepathfinder/mcp-bridge
 
 # Set environment variables
 export CODEPATHFINDER_API_KEY="cpf_YOUR_KEY"
@@ -147,9 +147,9 @@ Press Ctrl+C to exit.
 When you're ready to publish to production:
 
 1. **Remove SSL disable flag** from the config
-2. **Use production endpoint**: `https://codepathfinder.com/api/v1/mcp/tools/call/`
+2. **Use production endpoint**: `https://<YOUR_DOMAIN>/api/v1/mcp/tools/call/`
 3. **Publish to npm**: `npm publish --access public`
-4. **Update config to use npx**: `"command": "npx", "args": ["-y", "@grabowskit/mcp-bridge"]`
+4. **Update config to use npx**: `"command": "npx", "args": ["-y", "@your-org/mcp-bridge"]`
 
 ## What Changed
 

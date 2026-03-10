@@ -5,7 +5,7 @@ This guide describes how to configure your local development environment to use 
 ## 1. Environment Configuration
 
 You must update your environment variables in the primary `.env` file located at:
-`/Users/grabowskit/dev/pathfinder/.env`
+`.env` (in the project root)
 
 ### Elasticsearch Settings
 Update the following keys to point to your local Elasticsearch instance:
@@ -24,7 +24,7 @@ The Kibana host is configured in the Django settings but can be overridden by en
 
 The application currently contains hardcoded fallback credentials in the indexing utility. For full isolation, these should be updated to match your local setup:
 
-### Utility File: `apps/web/projects/utils.py`
+### Utility File: `web/projects/utils.py`
 Update the credentials in the following two functions:
 
 1.  **`trigger_local_indexer_job`**: Update the `environment` dictionary (around line 108).
@@ -43,7 +43,7 @@ docker-compose up -d
 
 # Restart Django development server
 # (Ensure your virtual environment is active)
-python apps/web/manage.py runserver 8000
+python web/manage.py runserver 8000
 ```
 
 > [!IMPORTANT]

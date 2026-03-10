@@ -2,7 +2,7 @@
   "mcpServers": {
     "codepathfinder-tester": {
       "command": "node",
-      "args": ["/Users/grabowskit/dev/pathfinder/mcp-bridge/build/index.js"],
+      "args": ["/path/to/codepathfinder/mcp-bridge/build/index.js"],
       "env": {
         "CODEPATHFINDER_API_KEY": "cpf_YOUR_API_KEY_HERE",
         "CODEPATHFINDER_API_ENDPOINT": "https://localhost:8443/api/v1/mcp/tools/call/",

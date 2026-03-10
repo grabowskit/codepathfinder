@@ -3,7 +3,7 @@
 ## Summary
 
 Analysis of differences between:
-- **Fork**: `/Users/grabowskit/dev/pathfinder/apps/indexer`
+- **Fork**: `./indexer`
 - **Upstream**: `https://github.com/elastic/semantic-code-search-indexer`
 
 ## Changes Applied in This Sync
