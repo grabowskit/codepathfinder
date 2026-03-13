@@ -36,53 +36,73 @@ A semantic code indexing, search, and AI-powered chat platform. Index GitHub rep
 
 ### Prerequisites
 
-- Docker & Docker Compose
-- Git
-- An Elasticsearch cluster (local or [Elastic Cloud](https://cloud.elastic.co))
+- **Required:** Docker & Docker Compose v2, Git, openssl
+- **Optional:** [mkcert](https://github.com/FiloSottile/mkcert) — enables local HTTPS (recommended)
+  ```bash
+  # macOS
+  brew install mkcert && mkcert -install
+  ```
 
-### Local Development
+### One-Command Setup
 
-1. **Clone with submodules:**
-   ```bash
-   git clone --recurse-submodules https://github.com/<your-org>/codepathfinder.git
-   cd codepathfinder
-   ```
+```bash
+git clone https://github.com/grabowskit/codepathfinder.git
+cd codepathfinder
+./setup.sh
+```
 
-2. **Create the shared Docker network** (one-time):
-   ```bash
-   docker network create cpf-librechat
-   ```
+The interactive setup script guides you through the full stack in one command:
 
-3. **Configure environment:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Elasticsearch credentials and API keys
-   ```
+1. Checks prerequisites (Docker, openssl, mkcert)
+2. Prompts for Elasticsearch mode, LLM providers, OAuth, and GitHub token
+3. Auto-generates all secrets (no Python required on host)
+4. Writes `.env`, `chat-config/.env`, and `indexer/.env`
+5. Creates Docker volumes/network and generates mkcert SSL certs
+6. Builds and starts all services
+7. Runs database migrations and creates your admin account
+8. Configures LibreChat OIDC SSO automatically
+9. Shows a health check table and service URLs
 
-4. **Start all services:**
-   ```bash
-   docker-compose up --build
-   ```
+**Common flags:**
 
-5. **Run migrations and create admin user** (first run):
-   ```bash
-   docker-compose exec web python manage.py migrate
-   docker-compose exec web python manage.py createsuperuser
-   ```
+| Flag | Description |
+|------|-------------|
+| `--skip-build` | Skip `docker compose build` (use cached images) |
+| `--skip-start` | Generate config files only — don't start services |
+| `--non-interactive` | Read all answers from `SETUP_*` env vars or `answers.conf` |
 
-6. **Access the application:**
+> Re-running `./setup.sh` is safe — existing secrets are preserved and current `.env` values are shown as defaults.
 
-   | Service             | URL                         | Description                      |
-   |---------------------|-----------------------------|----------------------------------|
-   | Web App             | http://localhost:8000       | Main UI (projects, admin, skills)|
-   | Chat (LibreChat)    | http://localhost:8000/chat/ | AI chat with MCP tools           |
-   | Elasticsearch       | http://localhost:9200       | Search engine                    |
-   | Kibana              | http://localhost:5601       | Elasticsearch dashboard          |
-   | LibreChat (direct)  | http://localhost:3080       | Direct LibreChat access          |
+### Service URLs (after setup)
 
-   > **Note**: New accounts are inactive by default. Log in as the superuser to activate them, or check `docker-compose logs web` for the approval email link.
+With HTTPS (mkcert available):
 
-See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for full setup details including Elasticsearch and Google OAuth configuration.
+| Service         | URL                         | Description                    |
+|-----------------|-----------------------------|--------------------------------|
+| CodePathfinder  | https://localhost:8443      | Main UI (projects, admin, docs)|
+| LibreChat       | https://localhost:3443      | AI chat with MCP tools         |
+| Kibana          | http://localhost:5601       | Elasticsearch dashboard        |
+
+Without HTTPS:
+
+| Service         | URL                         | Description                    |
+|-----------------|-----------------------------|--------------------------------|
+| CodePathfinder  | http://localhost:8000       | Main UI (projects, admin, docs)|
+| LibreChat       | http://localhost:3080       | AI chat with MCP tools         |
+| Kibana          | http://localhost:5601       | Elasticsearch dashboard        |
+
+> **Note**: New accounts are inactive by default. Log in as the superuser to activate them, or check `docker compose logs web` for the approval link.
+
+### LLM Providers
+
+`setup.sh` prompts for LLM API keys but they are **optional** — LibreChat starts without them. You can add keys later:
+
+1. Edit `chat-config/.env` with your API key(s)
+2. `docker compose restart librechat`
+
+Supported providers: OpenAI, Anthropic, Azure OpenAI, Google Gemini, AWS Bedrock.
+
+See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for full setup details including manual configuration and troubleshooting.
 
 ## Features
 
@@ -158,6 +178,7 @@ Skills are reusable instructions that configure the AI agent's behavior for spec
 
 ```
 codepathfinder/
+├── setup.sh                      # Interactive setup script (start here!)
 ├── web/                          # Django web application
 │   ├── CodePathfinder/           # Django settings and root URLs
 │   ├── core/                     # User auth, admin, system settings
@@ -182,6 +203,7 @@ codepathfinder/
 │   └── librechat/                # LibreChat K8s manifests
 ├── scripts/
 │   ├── deploy.sh                 # GCP production deployment
+│   ├── setup.sh                  # Forwarder → ./setup.sh
 │   └── smoke_test.py             # Smoke test suite
 ├── tests/                        # Test suite
 ├── nginx/                        # Nginx config (local dev HTTPS)
