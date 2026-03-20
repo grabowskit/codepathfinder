@@ -115,6 +115,8 @@ class SSOLogoutView(View):
 class LandingPageView(View):
     def get(self, request):
         if request.user.is_authenticated:
+            if request.user.is_superuser and request.user.setup_wizard_completed_at is None:
+                return redirect('setup_wizard')
             return redirect('project_list')
         return redirect('account_login')
 
@@ -275,3 +277,92 @@ class AdminSettingsView(LoginRequiredMixin, UserPassesTestMixin, View):
             'form': form,
             'settings': settings_obj,
         })
+
+
+class SetupWizardView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Full-page setup wizard for first-time admin configuration."""
+    template_name = 'core/setup_wizard.html'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get(self, request):
+        from core.setup_detection import detect_setup_state
+        state = detect_setup_state(request.user)
+
+        profile_form = UserEditForm(
+            instance=request.user,
+            is_social_account=is_social_account_user(request.user),
+            github_settings=getattr(request.user, 'github_settings', None),
+        )
+        settings_obj = SystemSettings.get_settings()
+        settings_form = SystemSettingsForm(instance=settings_obj)
+
+        return render(request, self.template_name, {
+            'state': state,
+            'profile_form': profile_form,
+            'settings_form': settings_form,
+            'settings_obj': settings_obj,
+        })
+
+    def post(self, request):
+        step = request.POST.get('wizard_step', '')
+
+        if step == 'admin_profile':
+            return self._handle_profile(request)
+        elif step == 'elasticsearch':
+            return self._handle_elasticsearch(request)
+        elif step == 'complete':
+            request.user.setup_wizard_completed_at = timezone.now()
+            request.user.save(update_fields=['setup_wizard_completed_at'])
+            messages.success(request, 'Setup wizard completed! Welcome to CodePathfinder.')
+            return redirect('project_list')
+
+        return redirect('setup_wizard')
+
+    def _handle_profile(self, request):
+        form = UserEditForm(
+            request.POST,
+            instance=request.user,
+            is_social_account=is_social_account_user(request.user),
+            github_settings=getattr(request.user, 'github_settings', None),
+        )
+        if form.is_valid():
+            user_obj = form.save()
+            if form.cleaned_data.get('password1'):
+                from django.contrib.auth import update_session_auth_hash
+                update_session_auth_hash(request, user_obj)
+            # Save GitHub settings if provided
+            github_username = form.cleaned_data.get('github_username', '')
+            github_token = form.cleaned_data.get('github_token', '')
+            if github_username or github_token:
+                github_settings, _ = UserGitHubSettings.objects.get_or_create(user=user_obj)
+                if github_username:
+                    github_settings.github_username = github_username
+                if github_token:
+                    github_settings.github_token = github_token
+                github_settings.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+    def _handle_elasticsearch(self, request):
+        settings_obj = SystemSettings.get_settings()
+        form = SystemSettingsForm(request.POST, instance=settings_obj)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.updated_by = request.user
+            obj.save()
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False, 'errors': form.errors}, status=400)
+
+
+class RestartWizardView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Reset wizard completion so it shows again."""
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def post(self, request):
+        request.user.setup_wizard_completed_at = None
+        request.user.save(update_fields=['setup_wizard_completed_at'])
+        return redirect('setup_wizard')

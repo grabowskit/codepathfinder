@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Memory - CodePathfinder{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<a href="{% if memory %}{% url 'memory_detail' memory.pk %}{% else %}{% url 'memory_list' %}{% endif %}" class="mem-form-back">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    <span>{% if memory %}{{ memory.title }}{% else %}Memories{% endif %}</span>
+</a>
+
+<!-- Page Header -->
+<div class="mem-form-header">
+    <div>
+        <h1 class="mem-form-title">{{ action }} Memory</h1>
+        <p class="mem-form-subtitle">
+            {% if action == 'Edit' %}Update the content and metadata of this memory.
+            {% else %}Add a new memory to the knowledge base for AI recall.{% endif %}
+        </p>
+    </div>
+</div>
+
+{% if messages %}
+<div style="margin-bottom: 1.25rem;">
+    {% for message in messages %}
+    <div class="mem-alert mem-alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div style="max-width: 760px;">
+    <form method="post" class="mem-form-card">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="mem-form-error-summary">
+            <strong>Please fix the following errors:</strong>
+            <ul style="margin: 0.5rem 0 0 1.5rem; padding: 0;">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="mem-form-group">
+            <label class="mem-form-label" for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<span class="mem-form-required">*</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}
+            <small class="mem-form-help">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+            <div class="mem-form-field-error">{{ field.errors.0 }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="mem-form-actions">
+            <a href="{% if memory %}{% url 'memory_detail' memory.pk %}{% else %}{% url 'memory_list' %}{% endif %}"
+               class="skills-action-btn skills-action-secondary">Cancel</a>
+            <button type="submit" class="skills-action-btn skills-action-primary">{{ action }} Memory</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.skills-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+.skills-action-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.skills-action-secondary:hover { background: var(--bg-card); color: var(--primary); border-color: var(--primary); }
+.skills-action-primary {
+    background: var(--accent-gradient);
+    color: white;
+    box-shadow: 0 2px 8px var(--primary-glow);
+}
+.skills-action-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.mem-form-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s ease;
+}
+.mem-form-back:hover { color: var(--primary); }
+
+.mem-form-header {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.mem-form-title {
+    margin: 0 0 0.375rem 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+.mem-form-subtitle {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.mem-form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+}
+
+.mem-form-error-summary {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    color: #ef4444;
+    font-size: 0.875rem;
+}
+
+.mem-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.mem-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.4rem;
+}
+.mem-form-required { color: #ef4444; margin-left: 0.2rem; }
+
+.mem-form-help {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.mem-form-field-error {
+    margin-top: 0.35rem;
+    font-size: 0.8rem;
+    color: #ef4444;
+}
+
+.mem-form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Alert messages */
+.mem-alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+.mem-alert-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.mem-alert-error, .mem-alert-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+</style>
+
+<script>
+// Parse tags JSON field as comma-separated for friendlier UX
+(function() {
+    var tagsInput = document.querySelector('[name="tags"]');
+    if (!tagsInput) return;
+    try {
+        var val = tagsInput.value.trim();
+        if (val.startsWith('[')) {
+            tagsInput.value = JSON.parse(val).join(', ');
+        }
+    } catch(e) {}
+    tagsInput.closest('form').addEventListener('submit', function() {
+        var raw = tagsInput.value.trim();
+        if (!raw.startsWith('[')) {
+            var tags = raw ? raw.split(',').map(function(t) { return t.trim(); }).filter(Boolean) : [];
+            tagsInput.value = JSON.stringify(tags);
+        }
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,1185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Setup Wizard - CodePathfinder{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <!-- Left: Progress Sidebar -->
+    <div class="wizard-progress">
+        <div class="wizard-progress-sticky">
+        <div class="wizard-progress-header">
+            <div class="wizard-progress-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            </div>
+            <div class="wizard-progress-title">Setup Wizard</div>
+            <div class="wizard-progress-subtitle">Configure your instance</div>
+        </div>
+        <ol class="wizard-steps-list">
+            <li class="wizard-step-item active" data-step="welcome">
+                <span class="wizard-step-number">1</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">Welcome</span>
+            </li>
+            <li class="wizard-step-item" data-step="profile">
+                <span class="wizard-step-number">2</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">Admin Profile</span>
+            </li>
+            <li class="wizard-step-item" data-step="elasticsearch">
+                <span class="wizard-step-number">3</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">Elasticsearch</span>
+            </li>
+            <li class="wizard-step-item" data-step="librechat">
+                <span class="wizard-step-number">4</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">LLM / Chat</span>
+            </li>
+            <li class="wizard-step-item" data-step="project">
+                <span class="wizard-step-number">5</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">First Project</span>
+            </li>
+            <li class="wizard-step-item" data-step="review">
+                <span class="wizard-step-number">6</span>
+                <span class="wizard-step-check">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </span>
+                <span class="wizard-step-label">Review</span>
+            </li>
+        </ol>
+        </div><!-- end wizard-progress-sticky -->
+    </div>
+
+    <!-- Right: Step Content -->
+    <div class="wizard-content">
+
+        <!-- Step 1: Welcome -->
+        <div class="wizard-panel" id="step-welcome">
+            <h2 class="wizard-panel-title">Welcome to CodePathfinder</h2>
+            <p class="wizard-panel-desc">
+                This wizard will help you verify and complete your instance setup.
+                We've detected what <code>setup.sh</code> has already configured for you.
+            </p>
+
+            <div class="wizard-detection-grid">
+                <div class="detection-card {% if state.admin_profile.has_email and state.admin_profile.has_name %}detection-ok{% else %}detection-pending{% endif %}">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="detection-label">Admin Profile</div>
+                    <div class="detection-badge {% if state.admin_profile.has_email and state.admin_profile.has_name %}badge-ok{% else %}badge-pending{% endif %}">
+                        {% if state.admin_profile.has_email and state.admin_profile.has_name %}Complete{% else %}Needs Review{% endif %}
+                    </div>
+                </div>
+
+                <div class="detection-card {% if state.elasticsearch.configured %}detection-ok{% else %}detection-pending{% endif %}">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"/>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                    </div>
+                    <div class="detection-label">Elasticsearch</div>
+                    <div class="detection-badge {% if state.elasticsearch.configured %}badge-ok{% else %}badge-pending{% endif %}">
+                        {% if state.elasticsearch.configured %}Configured{% else %}Needs Setup{% endif %}
+                    </div>
+                </div>
+
+                <div class="detection-card {% if state.librechat.url_configured %}detection-ok{% else %}detection-pending{% endif %}">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="detection-label">LibreChat / LLM</div>
+                    <div class="detection-badge {% if state.librechat.url_configured %}badge-ok{% else %}badge-pending{% endif %}">
+                        {% if state.librechat.url_configured %}Configured{% else %}Needs Setup{% endif %}
+                    </div>
+                </div>
+
+                <div class="detection-card {% if state.first_project.has_projects %}detection-ok{% else %}detection-pending{% endif %}">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="detection-label">First Project</div>
+                    <div class="detection-badge {% if state.first_project.has_projects %}badge-ok{% else %}badge-pending{% endif %}">
+                        {% if state.first_project.has_projects %}{{ state.first_project.count }} project{{ state.first_project.count|pluralize }}{% else %}Not Created{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="wizard-actions">
+                <button type="button" class="btn btn-secondary" onclick="wizardSkipAll()">Skip Wizard</button>
+                <button type="button" class="btn btn-primary" onclick="wizardNext()">Get Started</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Admin Profile -->
+        <div class="wizard-panel" id="step-profile" style="display: none;">
+            <h2 class="wizard-panel-title">Admin Profile</h2>
+            <p class="wizard-panel-desc">Verify your admin account details. You can update your name, email, or change your password.</p>
+
+            {% if state.admin_profile.has_email and state.admin_profile.has_name %}
+            <div class="wizard-preconfigured">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>Your profile looks complete. You can skip this step or update below.</span>
+            </div>
+            {% endif %}
+
+            <form id="profileForm" class="wizard-form" action="{% url 'setup_wizard' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="wizard_step" value="admin_profile">
+
+                <div class="wizard-form-errors" id="profileFormErrors" style="display: none;"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    {{ profile_form.username }}
+                    {% if profile_form.username.help_text %}
+                    <small class="help-text">{{ profile_form.username.help_text }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="wizard-form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        {{ profile_form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        {{ profile_form.last_name }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    {{ profile_form.email }}
+                </div>
+
+                {% if profile_form.password1 %}
+                <div class="wizard-form-row">
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        {{ profile_form.password1 }}
+                        <small class="help-text">Leave blank to keep current password.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        {{ profile_form.password2 }}
+                    </div>
+                </div>
+                {% endif %}
+            </form>
+
+            <div class="wizard-actions">
+                <button type="button" class="btn btn-secondary" onclick="wizardPrev()">Back</button>
+                <button type="button" class="btn btn-secondary" onclick="wizardSkip()">Skip</button>
+                <button type="button" class="btn btn-primary" onclick="wizardSaveAndNext('profileForm')">Save &amp; Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Elasticsearch -->
+        <div class="wizard-panel" id="step-elasticsearch" style="display: none;">
+            <h2 class="wizard-panel-title">Elasticsearch Configuration</h2>
+            <p class="wizard-panel-desc">Configure your Elasticsearch connection for semantic code search.</p>
+
+            {% if state.elasticsearch.configured %}
+            <div class="wizard-preconfigured">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>
+                    Elasticsearch is already configured
+                    {% if state.elasticsearch.source == 'env' %}
+                        via environment variables (setup.sh).
+                    {% else %}
+                        in System Settings.
+                    {% endif %}
+                    {% if state.elasticsearch.mode == 'cloud' %}(Elastic Cloud){% else %}(Self-hosted){% endif %}
+                </span>
+            </div>
+            {% endif %}
+
+            <form id="esForm" class="wizard-form" action="{% url 'setup_wizard' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="wizard_step" value="elasticsearch">
+
+                <div class="wizard-form-errors" id="esFormErrors" style="display: none;"></div>
+
+                <div class="settings-section">
+                    <h4 class="settings-section-title" style="margin-bottom: 1.25rem;">Connection</h4>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ settings_form.elasticsearch_endpoint.label }}</label>
+                        {{ settings_form.elasticsearch_endpoint }}
+                        <small class="help-text">{{ settings_form.elasticsearch_endpoint.help_text }}</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ settings_form.elasticsearch_cloud_id.label }}</label>
+                        {{ settings_form.elasticsearch_cloud_id }}
+                        <small class="help-text">{{ settings_form.elasticsearch_cloud_id.help_text }}</small>
+                    </div>
+
+                    <div class="wizard-form-row">
+                        <div class="form-group">
+                            <label class="form-label">{{ settings_form.elasticsearch_user.label }}</label>
+                            {{ settings_form.elasticsearch_user }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ settings_form.elasticsearch_password.label }}</label>
+                            {{ settings_form.elasticsearch_password }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">{{ settings_form.elasticsearch_api_key.label }}</label>
+                        {{ settings_form.elasticsearch_api_key }}
+                        <small class="help-text">Alternative to username/password authentication</small>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h4 class="settings-section-title" style="margin-bottom: 1.25rem;">Search Settings</h4>
+                    <div class="wizard-form-row">
+                        <div class="form-group">
+                            <label class="form-label">{{ settings_form.elasticsearch_index.label }}</label>
+                            {{ settings_form.elasticsearch_index }}
+                            <small class="help-text">{{ settings_form.elasticsearch_index.help_text }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">{{ settings_form.elasticsearch_inference_id.label }}</label>
+                            {{ settings_form.elasticsearch_inference_id }}
+                            <small class="help-text">{{ settings_form.elasticsearch_inference_id.help_text }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Include hidden fields for non-ES settings so the form validates -->
+                <div style="display: none;">
+                    {{ settings_form.indexer_concurrency }}
+                    {{ settings_form.otel_collector_enabled }}
+                    {{ settings_form.otel_collector_endpoint }}
+                    {{ settings_form.otel_collector_http_endpoint }}
+                    {{ settings_form.skills_repo_url }}
+                    {{ settings_form.skills_repo_token }}
+                    {{ settings_form.skills_repo_branch }}
+                </div>
+            </form>
+
+            <div class="wizard-actions">
+                <button type="button" class="btn btn-secondary" onclick="wizardPrev()">Back</button>
+                <button type="button" class="btn btn-secondary" onclick="wizardSkip()">Skip</button>
+                <button type="button" class="btn btn-primary" onclick="wizardSaveAndNext('esForm')">Save &amp; Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 4: LLM / LibreChat -->
+        <div class="wizard-panel" id="step-librechat" style="display: none;">
+            <h2 class="wizard-panel-title">LLM / Chat Configuration</h2>
+            <p class="wizard-panel-desc">
+                LibreChat provides the AI chat interface. It is configured separately via config files.
+            </p>
+
+            <div class="settings-section">
+                <h4 class="settings-section-title" style="margin-bottom: 1.25rem;">Status</h4>
+
+                <div class="wizard-status-row">
+                    <span class="wizard-status-label">LibreChat URL</span>
+                    <span class="wizard-status-value {% if state.librechat.url_configured %}text-success{% else %}text-warning{% endif %}">
+                        {% if state.librechat.url_configured %}
+                            {{ state.librechat.url }}
+                        {% else %}
+                            Not configured
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div class="wizard-status-row">
+                    <span class="wizard-status-label">OIDC Single Sign-On</span>
+                    <span class="wizard-status-value {% if state.librechat.oidc_configured %}text-success{% else %}text-warning{% endif %}">
+                        {% if state.librechat.oidc_configured %}Configured{% else %}Not configured{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4 class="settings-section-title" style="margin-bottom: 1.25rem;">Adding LLM API Keys</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.6; margin: 0;">
+                    To add or change LLM provider API keys (OpenAI, Anthropic, etc.), edit the file
+                    <code>chat-config/.env</code> and then restart LibreChat:
+                </p>
+                <div class="wizard-code-block">
+                    <code>docker compose restart librechat</code>
+                </div>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0.75rem 0 0 0;">
+                    The setup script may have already configured these if you selected LLM providers during setup.
+                </p>
+            </div>
+
+            <div class="wizard-actions">
+                <button type="button" class="btn btn-secondary" onclick="wizardPrev()">Back</button>
+                <button type="button" class="btn btn-primary" onclick="wizardNext()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 5: First Project -->
+        <div class="wizard-panel" id="step-project" style="display: none;">
+            <h2 class="wizard-panel-title">Create Your First Project</h2>
+            <p class="wizard-panel-desc">
+                A project connects a GitHub repository to Elasticsearch for semantic code search and AI-powered chat.
+            </p>
+
+            {% if state.first_project.has_projects %}
+            <div class="wizard-preconfigured">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                <span>You already have {{ state.first_project.count }} project{{ state.first_project.count|pluralize }}. You can skip this step or create another.</span>
+            </div>
+            {% endif %}
+
+            <div class="settings-section" style="text-align: center; padding: 2.5rem 2rem;">
+                <div style="margin-bottom: 1rem; color: var(--primary); opacity: 0.85;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        <line x1="12" y1="11" x2="12" y2="17"/>
+                        <line x1="9" y1="14" x2="15" y2="14"/>
+                    </svg>
+                </div>
+                <h3 style="margin: 0 0 0.5rem 0; font-family: var(--font-display); font-weight: 600;">Index a Repository</h3>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 400px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+                    Add a GitHub repository URL and run the indexer to build your semantic search index.
+                </p>
+                <a href="{% url 'project_create' %}?wizard=1" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.5rem;">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Create Project
+                </a>
+            </div>
+
+            <div class="wizard-actions">
+                <button type="button" class="btn btn-secondary" onclick="wizardPrev()">Back</button>
+                <button type="button" class="btn btn-secondary" onclick="wizardSkip()">Skip</button>
+                <button type="button" class="btn btn-primary" onclick="wizardNext()">Continue</button>
+            </div>
+        </div>
+
+        <!-- Step 6: Review & Complete -->
+        <div class="wizard-panel" id="step-review" style="display: none;">
+            <h2 class="wizard-panel-title">Review &amp; Complete</h2>
+            <p class="wizard-panel-desc">Here's a summary of your setup. You can go back to any step to make changes.</p>
+
+            <div class="wizard-summary" id="wizardSummary">
+                <!-- Populated by JS -->
+            </div>
+
+            <form id="completeForm" method="post" action="{% url 'setup_wizard' %}">
+                {% csrf_token %}
+                <input type="hidden" name="wizard_step" value="complete">
+                <div class="wizard-actions">
+                    <button type="button" class="btn btn-secondary" onclick="wizardPrev()">Back</button>
+                    <button type="submit" class="btn btn-primary">Complete Setup</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<style>
+/* Wizard Layout */
+.wizard-container {
+    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
+    gap: 0;
+    min-height: calc(100vh - var(--topbar-height) - 3rem);
+}
+
+/* Progress Sidebar */
+.wizard-progress {
+    width: 240px;
+    min-width: 240px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-color);
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+}
+
+.wizard-progress-sticky {
+    padding: 1.75rem 1.25rem;
+    position: sticky;
+    top: 0;
+}
+
+body.light .wizard-progress {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.wizard-progress-header {
+    text-align: center;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.wizard-progress-icon {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.wizard-progress-title {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.wizard-progress-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Steps List */
+.wizard-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.wizard-step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin-bottom: 0.25rem;
+    color: var(--text-secondary);
+}
+
+.wizard-step-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+body.light .wizard-step-item:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* Step connector lines */
+.wizard-step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 1.3rem;
+    top: 2.25rem;
+    width: 2px;
+    height: 0.75rem;
+    background: var(--border-color);
+}
+
+.wizard-step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+body.light .wizard-step-number {
+    background: #e2e8f0;
+}
+
+.wizard-step-check {
+    display: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wizard-step-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Active step */
+.wizard-step-item.active {
+    color: var(--primary);
+}
+
+.wizard-step-item.active .wizard-step-number {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+/* Completed step */
+.wizard-step-item.completed .wizard-step-number {
+    display: none;
+}
+
+.wizard-step-item.completed .wizard-step-check {
+    display: flex;
+    background: var(--green-600, #16a34a);
+    color: #ffffff;
+}
+
+.wizard-step-item.completed {
+    color: var(--text-primary);
+}
+
+/* Skipped step */
+.wizard-step-item.skipped {
+    color: var(--text-muted);
+}
+
+.wizard-step-item.skipped .wizard-step-number {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+}
+
+.wizard-step-item.skipped .wizard-step-label {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* Content Area */
+.wizard-content {
+    flex: 1;
+    padding: 1.75rem 2rem;
+    min-width: 0;
+}
+
+.wizard-panel {
+    animation: wizardFadeIn 0.25s ease;
+}
+
+@keyframes wizardFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.wizard-panel-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.wizard-panel-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+}
+
+/* Detection Grid (Welcome step) */
+.wizard-detection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
+
+.detection-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+body.light .detection-card {
+    background: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.detection-card.detection-ok {
+    border-color: rgba(22, 163, 74, 0.3);
+}
+
+.detection-card.detection-pending {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.detection-icon {
+    color: var(--text-secondary);
+}
+
+.detection-card.detection-ok .detection-icon {
+    color: var(--green-600, #16a34a);
+}
+
+.detection-card.detection-pending .detection-icon {
+    color: var(--amber-500, #f59e0b);
+}
+
+.detection-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.detection-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-full, 9999px);
+    display: inline-block;
+    width: fit-content;
+}
+
+.detection-badge.badge-ok {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--green-600, #16a34a);
+}
+
+body.light .detection-badge.badge-ok {
+    background: rgba(22, 163, 74, 0.08);
+}
+
+.detection-badge.badge-pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-500, #f59e0b);
+}
+
+body.light .detection-badge.badge-pending {
+    background: rgba(245, 158, 11, 0.08);
+}
+
+/* Pre-configured Notice */
+.wizard-preconfigured {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    background: rgba(22, 163, 74, 0.08);
+    border: 1px solid rgba(22, 163, 74, 0.2);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    color: var(--green-600, #16a34a);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+body.light .wizard-preconfigured {
+    background: rgba(22, 163, 74, 0.05);
+    border-color: rgba(22, 163, 74, 0.15);
+}
+
+/* Form within wizard */
+.wizard-form {
+    margin-bottom: 0;
+}
+
+.wizard-form .form-group {
+    margin-bottom: 1rem;
+}
+
+.wizard-form .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.wizard-form .help-text {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.wizard-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.wizard-form-errors {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.25rem;
+    color: var(--red-500, #ef4444);
+    font-size: 0.875rem;
+}
+
+/* Settings section reuse */
+.wizard-panel .settings-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+body.light .wizard-panel .settings-section {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.wizard-panel .settings-section-title {
+    margin: 0;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+/* Status rows (LibreChat step) */
+.wizard-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.wizard-status-row:last-child {
+    border-bottom: none;
+}
+
+.wizard-status-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.wizard-status-value {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.text-success {
+    color: var(--green-600, #16a34a);
+}
+
+.text-warning {
+    color: var(--amber-500, #f59e0b);
+}
+
+/* Code block */
+.wizard-code-block {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--primary);
+}
+
+body.light .wizard-code-block {
+    background: #f1f5f9;
+}
+
+/* Action Bar */
+.wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Summary (Review step) */
+.wizard-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.wizard-summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+body.light .wizard-summary-item {
+    background: #ffffff;
+}
+
+.wizard-summary-item:hover {
+    border-color: var(--primary);
+}
+
+.wizard-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.wizard-summary-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.wizard-summary-icon.icon-completed {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--green-600, #16a34a);
+}
+
+.wizard-summary-icon.icon-skipped {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-500, #f59e0b);
+}
+
+.wizard-summary-icon.icon-pending {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+.wizard-summary-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.wizard-summary-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full, 9999px);
+}
+
+.wizard-summary-badge.summary-completed {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--green-600, #16a34a);
+}
+
+.wizard-summary-badge.summary-skipped {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--amber-500, #f59e0b);
+}
+
+.wizard-summary-badge.summary-pending {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wizard-container {
+        flex-direction: column;
+    }
+    .wizard-progress {
+        width: 100%;
+        min-width: unset;
+        border-radius: var(--radius-xl);
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .wizard-progress-sticky {
+        position: static;
+    }
+    .wizard-steps-list {
+        display: flex;
+        overflow-x: auto;
+        gap: 0;
+    }
+    .wizard-step-item {
+        flex-direction: column;
+        text-align: center;
+        min-width: 80px;
+        padding: 0.5rem;
+    }
+    .wizard-step-item:not(:last-child)::after {
+        display: none;
+    }
+    .wizard-detection-grid {
+        grid-template-columns: 1fr;
+    }
+    .wizard-form-row {
+        grid-template-columns: 1fr;
+    }
+    .wizard-content {
+        padding: 1rem;
+    }
+}
+</style>
+
+<script>
+(function() {
+    var STEPS = ['welcome', 'profile', 'elasticsearch', 'librechat', 'project', 'review'];
+    var STEP_LABELS = {
+        'welcome': 'Welcome',
+        'profile': 'Admin Profile',
+        'elasticsearch': 'Elasticsearch',
+        'librechat': 'LLM / Chat',
+        'project': 'First Project',
+        'review': 'Review'
+    };
+    var currentStep = 0;
+    var stepStatus = {}; // { stepName: 'completed' | 'skipped' | null }
+
+    function showStep(index) {
+        if (index < 0 || index >= STEPS.length) return;
+        STEPS.forEach(function(name, i) {
+            var panel = document.getElementById('step-' + name);
+            if (panel) panel.style.display = (i === index) ? 'block' : 'none';
+
+            var li = document.querySelector('.wizard-step-item[data-step="' + name + '"]');
+            if (!li) return;
+            li.classList.remove('active', 'completed', 'skipped');
+            if (i === index) {
+                li.classList.add('active');
+            } else if (stepStatus[name] === 'completed') {
+                li.classList.add('completed');
+            } else if (stepStatus[name] === 'skipped') {
+                li.classList.add('skipped');
+            }
+        });
+        currentStep = index;
+        sessionStorage.setItem('wizardStep', index);
+        sessionStorage.setItem('wizardStepStatus', JSON.stringify(stepStatus));
+
+        // Update review summary if on review step
+        if (STEPS[index] === 'review') {
+            buildSummary();
+        }
+    }
+
+    function buildSummary() {
+        var container = document.getElementById('wizardSummary');
+        if (!container) return;
+        var html = '';
+        // Skip welcome and review steps in summary
+        for (var i = 1; i < STEPS.length - 1; i++) {
+            var name = STEPS[i];
+            var status = stepStatus[name] || 'pending';
+            var iconClass = 'icon-' + status;
+            var badgeClass = 'summary-' + status;
+            var badgeText = status === 'completed' ? 'Completed' : (status === 'skipped' ? 'Skipped' : 'Pending');
+            var iconSvg = '';
+            if (status === 'completed') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            } else if (status === 'skipped') {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+            } else {
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
+            }
+            html += '<div class="wizard-summary-item" onclick="wizardGoTo(' + i + ')">' +
+                '<div class="wizard-summary-left">' +
+                '<div class="wizard-summary-icon ' + iconClass + '">' + iconSvg + '</div>' +
+                '<span class="wizard-summary-name">' + STEP_LABELS[name] + '</span>' +
+                '</div>' +
+                '<span class="wizard-summary-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    window.wizardNext = function() {
+        if (!stepStatus[STEPS[currentStep]]) {
+            stepStatus[STEPS[currentStep]] = 'completed';
+        }
+        if (currentStep < STEPS.length - 1) {
+            showStep(currentStep + 1);
+        }
+    };
+
+    window.wizardPrev = function() {
+        if (currentStep > 0) {
+            showStep(currentStep - 1);
+        }
+    };
+
+    window.wizardSkip = function() {
+        stepStatus[STEPS[currentStep]] = 'skipped';
+        if (currentStep < STEPS.length - 1) {
+            showStep(currentStep + 1);
+        }
+    };
+
+    window.wizardGoTo = function(index) {
+        showStep(index);
+    };
+
+    window.wizardSkipAll = function() {
+        var form = document.getElementById('completeForm');
+        if (form) form.submit();
+    };
+
+    window.wizardSaveAndNext = function(formId) {
+        var form = document.getElementById(formId);
+        if (!form) return;
+
+        var formData = new FormData(form);
+        var errorsDiv = document.getElementById(formId + 'Errors');
+
+        fetch(form.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                if (errorsDiv) errorsDiv.style.display = 'none';
+                stepStatus[STEPS[currentStep]] = 'completed';
+                wizardNext();
+            } else {
+                displayFormErrors(formId, data.errors);
+            }
+        })
+        .catch(function(err) {
+            console.error('Wizard save error:', err);
+            if (errorsDiv) {
+                errorsDiv.innerHTML = 'An unexpected error occurred. Please try again.';
+                errorsDiv.style.display = 'block';
+            }
+        });
+    };
+
+    function displayFormErrors(formId, errors) {
+        var errorsDiv = document.getElementById(formId + 'Errors');
+        if (!errorsDiv) return;
+
+        var html = '<ul style="margin: 0; padding-left: 1.25rem; list-style: disc;">';
+        if (errors.__all__) {
+            errors.__all__.forEach(function(msg) {
+                html += '<li>' + escapeHtml(msg.message || msg) + '</li>';
+            });
+        }
+        for (var field in errors) {
+            if (field === '__all__') continue;
+            var fieldErrors = errors[field];
+            if (Array.isArray(fieldErrors)) {
+                fieldErrors.forEach(function(msg) {
+                    html += '<li><strong>' + escapeHtml(field) + ':</strong> ' + escapeHtml(msg.message || msg) + '</li>';
+                });
+            }
+        }
+        html += '</ul>';
+        errorsDiv.innerHTML = html;
+        errorsDiv.style.display = 'block';
+        errorsDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    }
+
+    // Sidebar step click navigation
+    document.querySelectorAll('.wizard-step-item').forEach(function(li, i) {
+        li.addEventListener('click', function() {
+            showStep(i);
+        });
+    });
+
+    // Restore step on page load
+    var savedStep = parseInt(sessionStorage.getItem('wizardStep') || '0', 10);
+    var savedStatus = sessionStorage.getItem('wizardStepStatus');
+    if (savedStatus) {
+        try { stepStatus = JSON.parse(savedStatus); } catch(e) {}
+    }
+
+    // Check for ?from=project return
+    if (window.location.search.indexOf('from=project') !== -1) {
+        // Came back from project create, mark project step as completed
+        stepStatus['project'] = 'completed';
+        savedStep = STEPS.indexOf('review');
+        // Clean URL
+        history.replaceState(null, '', window.location.pathname);
+    }
+
+    showStep(savedStep < STEPS.length ? savedStep : 0);
+})();
+</script>
+{% endblock %}

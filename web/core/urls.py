@@ -15,5 +15,8 @@ urlpatterns = [
     path('users/<int:pk>/edit/', views.AdminUserUpdateView.as_view(), name='admin_user_edit'),
     path('users/<int:pk>/delete/', views.AdminUserDeleteView.as_view(), name='admin_user_delete'),
     path('settings/', views.AdminSettingsView.as_view(), name='admin_settings'),
+    path('setup/', views.SetupWizardView.as_view(), name='setup_wizard'),
+    path('setup/restart/', views.RestartWizardView.as_view(), name='restart_wizard'),
+    path('about/', views.AboutView.as_view(), name='about'),
     path('', views.LandingPageView.as_view(), name='home'),
 ]

@@ -24,6 +24,52 @@ import os
 logger = logging.getLogger(__name__)
 
 
+def _get_injected_memories(tool_args: dict, user) -> str:
+    """
+    Auto-inject memories whose tags match string values in tool_args.
+
+    Returns a <system_memory> block to prepend to tool results, or '' if none match.
+    Per comment recommendation: wrap in <system_memory> so the LLM distinguishes
+    injected facts from conversational intent regardless of client.
+    """
+    try:
+        # Extract candidate tags from tool argument values.
+        # Include both whole values (for tag list args like ['django', 'python'])
+        # and individual words from longer strings (for query args like 'django orm').
+        candidate_tags = set()
+        for v in tool_args.values():
+            if isinstance(v, str):
+                candidate_tags.add(v.lower())
+                # Also split on whitespace/punctuation to catch tags embedded in queries
+                import re
+                for word in re.split(r'[\s,;/]+', v.lower()):
+                    word = word.strip('.-_')
+                    if word:
+                        candidate_tags.add(word)
+            elif isinstance(v, list):
+                for item in v:
+                    if isinstance(item, str):
+                        candidate_tags.add(item.lower())
+
+        if not candidate_tags:
+            return ''
+
+        from memories.services import MemoryService
+        service = MemoryService()
+        # Fetch all tags from accessible memories, then find matches
+        matching = service.get_memories_by_tags(list(candidate_tags), user)
+        if not matching:
+            return ''
+
+        blocks = []
+        for memory in matching:
+            blocks.append(f"[{memory.title}]\n{memory.content}")
+
+        combined = "\n\n---\n\n".join(blocks)
+        return f"<system_memory>\n{combined}\n</system_memory>"
+    except Exception as e:
+        logger.debug(f"Memory auto-injection skipped: {e}")
+        return ''
 
 
 
@@ -218,9 +264,19 @@ class MCPStreamableView(View):
             elif method == 'tools/call':
                 tool_name = params.get('name', '')
                 tool_args = params.get('arguments', {})
-                
+
                 try:
                     result_text = execute_tool(tool_name, tool_args, user=user)
+                    try:
+                        from telemetry.counters import increment_mcp_call
+                        increment_mcp_call(tool_name)
+                    except Exception:
+                        pass
+                    # Auto-inject matching memories (skip memory tools to avoid recursion)
+                    if not tool_name.startswith('memories_'):
+                        injected = _get_injected_memories(tool_args, user)
+                        if injected:
+                            result_text = injected + "\n\n" + result_text
                     response_data = {
                         "content": [
                             {

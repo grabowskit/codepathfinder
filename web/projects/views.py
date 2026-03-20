@@ -37,6 +37,12 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
     template_name = 'projects/project_form.html'
     success_url = reverse_lazy('project_list')
 
+    def get_success_url(self):
+        if 'wizard' in self.request.GET:
+            from django.urls import reverse
+            return reverse('setup_wizard') + '?from=project'
+        return str(self.success_url)
+
     def form_valid(self, form):
         from core.models import SystemSettings
         form.instance.user = self.request.user
@@ -188,6 +194,11 @@ class ProjectActionView(LoginRequiredMixin, View):
             success, msg = trigger_indexer_job(project)
             if success:
                 messages.success(request, f"Indexing job started for {project.name}.")
+                try:
+                    from telemetry.counters import increment
+                    increment('index_count')
+                except Exception:
+                    pass
             else:
                 project.status = 'pending' # Revert status
                 project.save()

@@ -29,9 +29,18 @@ Skills Tools:
 19. skills_activate - Activate a skill for the conversation (use this to "become" a skill)
 20. skills_discover - Discover and import skills from an external GitHub repository
 
+Memories Tools:
+21. memories_list - List memories (personal and/or organization)
+22. memories_get - Get a memory by ID
+23. memories_search - Semantic search across memories
+24. memories_create - Create a new memory
+25. memories_update - Update an existing memory
+26. memories_delete - Soft-delete a memory
+27. memories_import - Import a markdown document as a RAG memory
+
 Job Management Tools:
-21. job_manage - Manage indexing jobs (start, stop, reset, create, update, delete, bulk ops)
-22. job_status - Get job status and information (status, list, details, logs, history)
+28. job_manage - Manage indexing jobs (start, stop, reset, create, update, delete, bulk ops)
+29. job_status - Get job status and information (status, list, details, logs, history)
 
 All tools support project-scoped access control.
 """
@@ -504,6 +513,142 @@ Use github_get_labels first to discover valid labels for the repository.""",
                 }
             },
             "required": ["repo_url"]
+        }
+    },
+    # Memories Tools
+    {
+        "name": "memories_list",
+        "description": "List memories (personal and/or organization) with optional tag, scope, or type filter",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Filter by tags (AND match)"
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": ["user", "organization"],
+                    "description": "Filter by scope: 'user' (personal) or 'organization' (shared)"
+                },
+                "memory_type": {
+                    "type": "string",
+                    "enum": ["text", "document"],
+                    "description": "Filter by memory type"
+                }
+            }
+        }
+    },
+    {
+        "name": "memories_get",
+        "description": "Get a memory by ID with full content",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "memory_id": {
+                    "type": "integer",
+                    "description": "Memory ID"
+                }
+            },
+            "required": ["memory_id"]
+        }
+    },
+    {
+        "name": "memories_search",
+        "description": "Semantic search across memories (org + personal) using ELSER",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "Natural language search query"
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Max results to return (default: 5)",
+                    "default": 5
+                }
+            },
+            "required": ["query"]
+        }
+    },
+    {
+        "name": "memories_create",
+        "description": "Create a new memory. User scope is open to all users; organization scope requires admin.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Memory title"},
+                "content": {"type": "string", "description": "Memory content (markdown or plain text)"},
+                "memory_type": {
+                    "type": "string",
+                    "enum": ["text", "document"],
+                    "description": "Type: 'text' for short facts, 'document' for longer docs",
+                    "default": "text"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags for categorization and auto-injection matching"
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": ["user", "organization"],
+                    "description": "Scope: 'user' (personal, default) or 'organization' (admin only)",
+                    "default": "user"
+                }
+            },
+            "required": ["title", "content"]
+        }
+    },
+    {
+        "name": "memories_update",
+        "description": "Update an existing memory. Owner can update personal memories; admins can update org memories.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "memory_id": {"type": "integer", "description": "Memory ID"},
+                "title": {"type": "string"},
+                "content": {"type": "string"},
+                "tags": {"type": "array", "items": {"type": "string"}},
+                "scope": {"type": "string", "enum": ["user", "organization"]}
+            },
+            "required": ["memory_id"]
+        }
+    },
+    {
+        "name": "memories_delete",
+        "description": "Soft-delete a memory. Owner can delete personal memories; admins can delete org memories.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "memory_id": {"type": "integer", "description": "Memory ID to delete"}
+            },
+            "required": ["memory_id"]
+        }
+    },
+    {
+        "name": "memories_import",
+        "description": "Import a markdown document as a chunked RAG memory. Personal scope is open to all users; organization scope requires admin.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Document title"},
+                "content": {"type": "string", "description": "Full markdown document content"},
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags for categorization"
+                },
+                "scope": {
+                    "type": "string",
+                    "enum": ["user", "organization"],
+                    "description": "Scope: 'user' (personal, default) or 'organization' (admin only)",
+                    "default": "user"
+                }
+            },
+            "required": ["title", "content"]
         }
     },
     # Job Management Tools
@@ -1239,6 +1384,11 @@ def semantic_code_search(
             response = es.search(index=index_name, body=body, request_timeout=30)
 
         hits = response['hits']['hits']
+        try:
+            from telemetry.counters import increment
+            increment('search_count')
+        except Exception:
+            pass
         if not hits:
             return "No results found."
 
@@ -4674,6 +4824,182 @@ def otel_query_logs(
 
 
 # =============================================================================
+# Memories Tools
+# =============================================================================
+
+def memories_list(
+    tags: Optional[List[str]] = None,
+    scope: Optional[str] = None,
+    memory_type: Optional[str] = None,
+    user=None
+) -> str:
+    """List memories accessible to the user."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        memories = service.list_memories(user=user, tags=tags, scope=scope, memory_type=memory_type)
+        if not memories.exists():
+            return "No memories found."
+        parts = ["Memories:", "=" * 50]
+        for m in memories:
+            scope_label = "[Org]" if m.scope == 'organization' else "[Personal]"
+            type_label = f"[{m.memory_type}]"
+            tags_str = f" ({', '.join(m.tags)})" if m.tags else ""
+            parts.append(f"\nID {m.pk}: {m.title} {scope_label}{type_label}{tags_str}")
+            # Show first 200 chars of content
+            preview = m.content[:200] + ("..." if len(m.content) > 200 else "")
+            parts.append(f"  {preview}")
+        parts.append(f"\nTotal: {memories.count()}")
+        return "\n".join(parts)
+    except Exception as e:
+        logger.error(f"memories_list error: {e}")
+        raise ToolError(f"Failed to list memories: {e}")
+
+
+def memories_get(memory_id: int, user=None) -> str:
+    """Get a memory by ID."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        memory = service.get_memory(memory_id, user)
+        if not memory:
+            return f"Memory {memory_id} not found or access denied."
+        memory.increment_usage()
+        scope_label = "Organization" if memory.scope == 'organization' else "Personal"
+        parts = [
+            f"Memory: {memory.title}",
+            "=" * 50,
+            f"ID: {memory.pk}",
+            f"Type: {memory.memory_type}",
+            f"Scope: {scope_label}",
+            f"Tags: {', '.join(memory.tags) if memory.tags else 'none'}",
+            f"Usage: {memory.usage_count}",
+            "",
+            "Content:",
+            "=" * 50,
+            memory.content,
+        ]
+        return "\n".join(parts)
+    except Exception as e:
+        logger.error(f"memories_get error: {e}")
+        raise ToolError(f"Failed to get memory: {e}")
+
+
+def memories_search(query: str, limit: int = 5, user=None) -> str:
+    """Semantic search across accessible memories."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        results = service.search_memories(query, user, limit=limit)
+        if not results:
+            return f"No memories found for: {query}"
+        parts = [f"Memory search results for: '{query}'", "=" * 50]
+        for r in results:
+            scope_label = "[Org]" if r.get('scope') == 'organization' else "[Personal]"
+            parts.append(f"\nID {r['id']}: {r['title']} {scope_label}")
+            preview = r['content'][:200] + ("..." if len(r['content']) > 200 else "")
+            parts.append(f"  {preview}")
+        return "\n".join(parts)
+    except Exception as e:
+        logger.error(f"memories_search error: {e}")
+        raise ToolError(f"Failed to search memories: {e}")
+
+
+def memories_create(
+    title: str,
+    content: str,
+    memory_type: str = 'text',
+    tags: Optional[List[str]] = None,
+    scope: str = 'user',
+    user=None
+) -> str:
+    """Create a new memory."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        memory = service.create_memory(
+            user=user, title=title, content=content,
+            memory_type=memory_type, tags=tags, scope=scope
+        )
+        return f"Memory created (ID {memory.pk}): '{memory.title}' [{memory.scope}]"
+    except PermissionError as e:
+        raise ToolError(str(e))
+    except Exception as e:
+        logger.error(f"memories_create error: {e}")
+        raise ToolError(f"Failed to create memory: {e}")
+
+
+def memories_update(
+    memory_id: int,
+    title: Optional[str] = None,
+    content: Optional[str] = None,
+    tags: Optional[List[str]] = None,
+    scope: Optional[str] = None,
+    user=None
+) -> str:
+    """Update an existing memory."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        kwargs = {}
+        if title is not None:
+            kwargs['title'] = title
+        if content is not None:
+            kwargs['content'] = content
+        if tags is not None:
+            kwargs['tags'] = tags
+        if scope is not None:
+            kwargs['scope'] = scope
+        memory = service.update_memory(memory_id, user, **kwargs)
+        return f"Memory updated (ID {memory.pk}): '{memory.title}'"
+    except (PermissionError, ValueError) as e:
+        raise ToolError(str(e))
+    except Exception as e:
+        logger.error(f"memories_update error: {e}")
+        raise ToolError(f"Failed to update memory: {e}")
+
+
+def memories_delete(memory_id: int, user=None) -> str:
+    """Soft-delete a memory."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        service.delete_memory(memory_id, user)
+        return f"Memory {memory_id} deleted."
+    except (PermissionError, ValueError) as e:
+        raise ToolError(str(e))
+    except Exception as e:
+        logger.error(f"memories_delete error: {e}")
+        raise ToolError(f"Failed to delete memory: {e}")
+
+
+def memories_import(
+    title: str,
+    content: str,
+    tags: Optional[List[str]] = None,
+    scope: str = 'user',
+    user=None
+) -> str:
+    """Import a markdown document as a chunked RAG memory."""
+    try:
+        from memories.services import MemoryService
+        service = MemoryService()
+        memory = service.import_document(
+            user=user, title=title, content=content, tags=tags, scope=scope
+        )
+        char_count = len(content)
+        return (
+            f"Document imported (ID {memory.pk}): '{memory.title}' [{memory.scope}]\n"
+            f"{char_count} characters indexed for semantic retrieval."
+        )
+    except PermissionError as e:
+        raise ToolError(str(e))
+    except Exception as e:
+        logger.error(f"memories_import error: {e}")
+        raise ToolError(f"Failed to import document: {e}")
+
+
+# =============================================================================
 # Tool Registry
 # =============================================================================
 
@@ -4702,6 +5028,14 @@ TOOLS = {
     'skills_import': skills_import,
     'skills_discover': skills_discover,
     'skills_activate': skills_activate,
+    # Memories tools
+    'memories_list': memories_list,
+    'memories_get': memories_get,
+    'memories_search': memories_search,
+    'memories_create': memories_create,
+    'memories_update': memories_update,
+    'memories_delete': memories_delete,
+    'memories_import': memories_import,
     # Job management tools
     'job_manage': job_manage,
     'job_status': job_status,

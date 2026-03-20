@@ -61,8 +61,14 @@ INSTALLED_APPS = [
     'mcp_server',
     'chat',  # LibreChat integration
     'skills',  # AI agent skills system
+    'memories',  # AI knowledge base (memories)
+    'documents',  # User documents with GitHub sync
+    'telemetry',  # OSS telemetry client (counters + heartbeat)
     'django.contrib.humanize',
 ]
+
+# OSS Telemetry — enabled by default, opt out with TELEMETRY_ENABLED=false in .env
+TELEMETRY_ENABLED = os.getenv('TELEMETRY_ENABLED', 'true').strip().lower() in ('true', '1', 'yes')
 
 MIDDLEWARE = [
     'mcp_server.middleware.RequestDebugMiddleware',  # Debug MCP requests

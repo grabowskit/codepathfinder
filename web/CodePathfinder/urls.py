@@ -37,6 +37,7 @@ urlpatterns = [
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('projects/', include('projects.urls')),
     path('skills/', include('skills.urls')),  # Skills management
+    path('memories/', include('memories.urls')),  # Memories knowledge base
     path('otel/', include('otel_ingest.urls')),  # OTLP auth proxy (customer telemetry ingest)
     path('chat/', include('chat.urls')),  # LibreChat integration
     path('accounts/profile/', RedirectView.as_view(pattern_name='project_list', permanent=False)),

@@ -513,10 +513,24 @@ OPENID_SESSION_SECRET=""
 MEILI_MASTER_KEY=""
 OPENID_CLIENT_ID=""
 OPENID_CLIENT_SECRET=""
+INSTALLATION_ID=""
 
 phase3_generate_secrets() {
   hdr "Phase 3: Auto-Generate Secrets"
   echo ""
+
+  # INSTALLATION_ID — stable UUID per installation (anonymous, never linked to account)
+  local ex_iid
+  ex_iid=$(parse_env_file ".env" "INSTALLATION_ID" "")
+  if [[ -z "$ex_iid" ]]; then
+    local raw
+    raw=$(gen_hex 16)
+    INSTALLATION_ID="${raw:0:8}-${raw:8:4}-4${raw:13:3}-8${raw:17:3}-${raw:20:12}"
+    info "Generated INSTALLATION_ID"
+  else
+    INSTALLATION_ID="$ex_iid"
+    info "Preserved existing INSTALLATION_ID"
+  fi
 
   # DJANGO_SECRET_KEY — preserve if not a known placeholder
   local ex_django
@@ -664,6 +678,10 @@ CPF_PROJECT_ID=12
 
 # Kibana service account token (local dev default)
 KIBANA_SERVICE_ACCOUNT_TOKEN=AAEAAWVsYXN0aWMva2liYW5hL2tpYmFuYS10b2tlbjo3U1p6Mm0ybFJNQ1hYSWxpakkxcUln
+
+# Anonymous usage telemetry — set to false to opt out (see docs/TELEMETRY.md)
+INSTALLATION_ID=${INSTALLATION_ID}
+TELEMETRY_ENABLED=true
 ENVEOF
     ok "Generated .env"
   else
@@ -1102,6 +1120,31 @@ phase9_summary() {
   echo "  Documentation:   ${web_url}/docs/"
   echo "  Setup log:       ${REPO_ROOT}/logs/setup.log"
   echo ""
+
+  # ── Send install telemetry (anonymous, opt-out with TELEMETRY_ENABLED=false) ──
+  local telem_enabled
+  telem_enabled=$(parse_env_file "$REPO_ROOT/.env" "TELEMETRY_ENABLED" "true")
+  if [[ "$(tolower "$telem_enabled")" == "true" && "$SKIP_START" == "false" ]]; then
+    local llm_count=0
+    if [[ -n "$LLM_SELECTION" ]]; then
+      IFS=',' read -ra _p <<< "$LLM_SELECTION"
+      llm_count="${#_p[@]}"
+    fi
+    local os_type
+    os_type=$(uname -s | tr '[:upper:]' '[:lower:]')
+    local telem_payload
+    telem_payload=$(printf '{"event_type":"install","installation_id":"%s","version":"oss","os_type":"%s","es_mode":"%s","llm_providers_count":%d,"timestamp":"%s"}' \
+      "$INSTALLATION_ID" "$os_type" "$ES_MODE" "$llm_count" \
+      "$(date -u +"%Y-%m-%dT%H:%M:%SZ")")
+    if command -v curl >/dev/null 2>&1; then
+      curl -sf --max-time 5 -X POST \
+        -H "Content-Type: application/json" \
+        -d "$telem_payload" \
+        "https://codepathfinder.com/telemetry/event" >/dev/null 2>&1 || true
+    fi
+    info "Anonymous telemetry enabled. Set TELEMETRY_ENABLED=false in .env to opt out (docs/TELEMETRY.md)"
+  fi
+
   echo -e "  ${GREEN}${BOLD}Setup complete!${NC}"
   echo ""
 }

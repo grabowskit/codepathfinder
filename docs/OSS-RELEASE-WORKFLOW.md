@@ -73,6 +73,18 @@ After cherry-picking, grep for the following patterns and replace with the
 - `web/CodePathfinder/settings.py` — `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,
   `SESSION_COOKIE_DOMAIN`, `DEFAULT_FROM_EMAIL`
 
+### OSS Telemetry split (two-commit rule)
+
+The OSS telemetry feature is split across two commits on `main`:
+
+1. **Production receiver** (`web/oss_telemetry/` + settings/urls) — stays on `main` only. **Do not cherry-pick this commit to `oss-release`.**
+2. **OSS client** (`web/telemetry/`, `setup.sh` changes, feature counters, `docs/TELEMETRY.md`) — cherry-pick this commit to `oss-release`.
+
+After cherry-picking commit 2:
+- `web/CodePathfinder/settings.py`: the `'oss_telemetry'` entry in `INSTALLED_APPS` comes from commit 1 (not present on `oss-release`). Verify only `'telemetry'` is listed.
+- `web/CodePathfinder/urls.py`: remove the `path('telemetry/', ...)` line (production receiver route, not needed on OSS side).
+- The `TELEMETRY_ENDPOINT` in `web/telemetry/client.py` points to `https://codepathfinder.com/telemetry/event` — this is intentional and should NOT be replaced with a placeholder.
+
 ---
 
 ## Example: Porting a Feature Commit
