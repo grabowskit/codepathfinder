@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Account Inactive - CodePathfinder{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>Account Inactive</h1>
+        <p style="color: var(--text-secondary);">Account approval required</p>
+    </div>
+
+    <div class="card">
+        <div class="text-center">
+            <div style="margin-bottom: 1.5rem;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+
+            <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                Code Pathfinder admin is reviewing your request for an account. We will send you an email when your
+                account is activated.
+            </p>
+
+            <div class="mt-4">
+                <a href="{% url 'account_login' %}" class="btn btn-outline-primary">Return to Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

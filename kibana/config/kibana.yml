@@ -1,0 +1,20 @@
+# Kibana Configuration
+# This file contains settings to enable Agent Builder and other features
+
+# Server settings
+server.host: "0.0.0.0"
+server.shutdownTimeout: "5s"
+
+# Elasticsearch connection
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# Encryption keys for saved objects and connectors
+# These keys are required for connectors, actions, and encrypted saved objects to work
+# Generate new keys with: openssl rand -hex 32
+xpack.encryptedSavedObjects.encryptionKey: "REPLACE_WITH_32_BYTE_HEX_STRING_openssl_rand_hex_32"
+xpack.reporting.encryptionKey: "REPLACE_WITH_32_BYTE_HEX_STRING_openssl_rand_hex_32"
+
+# Note: Security is configured via environment variables in docker-compose.yml
+# Note: Agent Builder is enabled via Advanced Settings API, not directly in kibana.yml
+# See scripts/enable-agent-builder.sh for enabling it programmatically
+# Or enable it via Kibana UI: Global Search → "Agent Builder" → Toggle ON

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bad Request - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>400 Bad Request</h1>
+        <p style="color: var(--text-secondary);">The request could not be understood by the server.</p>
+    </div>
+
+    <div class="card">
+        <div class="text-center">
+            <div style="margin-bottom: 1.5rem; color: var(--danger);">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+
+            <p style="color: var(--text-primary); font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.6;">
+                The server could not process your request. This usually happens when:
+            </p>
+            <ul style="text-align: left; display: inline-block; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                <li>Required form fields are missing</li>
+                <li>The request data is malformed or invalid</li>
+                <li>CSRF token is missing or expired</li>
+                <li>Invalid JSON in API requests</li>
+            </ul>
+
+            <div class="mt-4">
+                <a href="{% url 'home' %}" class="btn btn-primary">Return Home</a>
+                <button onclick="window.history.back()" class="btn btn-secondary" style="margin-left: 0.5rem;">Go Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

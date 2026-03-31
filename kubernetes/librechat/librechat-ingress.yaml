@@ -1,0 +1,31 @@
+---
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: <YOUR_LIBRECHAT_CERT_NAME>
+  namespace: codepathfinder
+spec:
+  domains:
+    - chat.<YOUR_DOMAIN>
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: librechat-ingress
+  namespace: codepathfinder
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: "<YOUR_LIBRECHAT_CERT_NAME>"
+    kubernetes.io/ingress.global-static-ip-name: "<YOUR_LIBRECHAT_STATIC_IP_NAME>"
+spec:
+  rules:
+  - host: chat.<YOUR_DOMAIN>
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: librechat-service
+            port:
+              number: 80

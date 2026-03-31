@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Registration Closed - CodePathfinder{% endblock %}
+
+{% block auth_content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <h1>Registration Closed</h1>
+        <p style="color: var(--text-secondary);">CodePathfinder is currently in Private Beta</p>
+    </div>
+
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>
+        <h3 style="margin-bottom: 1rem;">Join Our Private Beta</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+            We're excited about your interest in CodePathfinder! Direct registration is currently closed,
+            but we're actively accepting beta applications.
+        </p>
+
+        <a href="{% url 'beta_signup' %}" class="btn btn-primary" style="width: 100%;">Request Early Access</a>
+
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                Already have an account? <a href="{% url 'account_login' %}">Sign in here</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

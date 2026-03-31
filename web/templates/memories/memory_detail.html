@@ -1,0 +1,566 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ memory.title }} - Memories - CodePathfinder{% endblock %}
+
+{% block content %}
+<!-- Back Navigation -->
+<a href="{% url 'memory_list' %}" class="skill-detail-back">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    <span>Memories</span>
+</a>
+
+<!-- Page Header -->
+<div class="skill-detail-header">
+    <div class="skill-detail-title-section">
+        <div class="skill-detail-title-row">
+            <h1 class="skill-detail-title">{{ memory.title }}</h1>
+            {% if memory.scope == 'organization' %}
+            <span class="mem-detail-org-badge">Organization</span>
+            {% else %}
+            <span class="mem-detail-personal-badge">Personal</span>
+            {% endif %}
+            {% if memory.memory_type == 'document' %}
+            <span class="mem-detail-doc-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Document
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="skill-detail-actions">
+        {% if memory.scope == 'organization' and user.is_staff or memory.created_by == user %}
+        <a href="{% url 'memory_update' memory.pk %}" class="skill-detail-btn skill-detail-btn-secondary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+            </svg>
+            <span>Edit</span>
+        </a>
+        <button type="button" class="skill-detail-btn skill-detail-btn-danger" onclick="openDeleteModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            <span>Delete</span>
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Metadata Bar -->
+<div class="skill-detail-meta-bar">
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <span class="skill-detail-meta-value">{{ memory.usage_count }}</span>
+        <span class="skill-detail-meta-label">uses</span>
+    </div>
+
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span class="skill-detail-meta-label">{{ memory.get_memory_type_display }}</span>
+    </div>
+
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="skill-detail-meta-label">Created</span>
+        <span class="skill-detail-meta-value local-time" data-timestamp="{{ memory.created_at|date:'c' }}">{{ memory.created_at|date:"M j, Y" }}</span>
+    </div>
+
+    {% if memory.created_by %}
+    <div class="skill-detail-meta-divider"></div>
+
+    <div class="skill-detail-meta-item">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="skill-detail-meta-label">{{ memory.created_by.username }}</span>
+    </div>
+    {% endif %}
+</div>
+
+{% if messages %}
+<div style="margin-bottom: 1rem;">
+    {% for message in messages %}
+    <div class="mem-alert mem-alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+<div class="skill-detail-content">
+    <!-- Left Column: Content -->
+    <div class="skill-detail-main">
+        <div class="skill-detail-section">
+            <div class="skill-detail-section-header">
+                <h2 class="skill-detail-section-title">Content</h2>
+                <button onclick="copyContent()" class="skill-detail-copy-btn" title="Copy content">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    <span>Copy</span>
+                </button>
+            </div>
+            <pre id="memory-content" class="skill-detail-code">{{ memory.content }}</pre>
+        </div>
+    </div>
+
+    <!-- Right Column: Sidebar -->
+    <div class="skill-detail-sidebar">
+        {% if memory.tags %}
+        <div class="skill-detail-sidebar-section">
+            <h3 class="skill-detail-sidebar-title">Tags</h3>
+            <div class="skill-detail-tags">
+                {% for tag in memory.tags %}
+                <a href="{% url 'memory_list' %}?tag={{ tag }}" class="skill-detail-tag">{{ tag }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="skill-detail-sidebar-section">
+            <h3 class="skill-detail-sidebar-title">Details</h3>
+            <div class="skill-detail-info-list">
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">ID</span>
+                    <span class="skill-detail-info-value">{{ memory.pk }}</span>
+                </div>
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Type</span>
+                    <span class="skill-detail-info-value">{{ memory.get_memory_type_display }}</span>
+                </div>
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Scope</span>
+                    <span class="skill-detail-info-value">{{ memory.get_scope_display }}</span>
+                </div>
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Usage</span>
+                    <span class="skill-detail-info-value">{{ memory.usage_count }} time{{ memory.usage_count|pluralize }}</span>
+                </div>
+                {% if memory.created_by %}
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Created by</span>
+                    <span class="skill-detail-info-value">{{ memory.created_by.username }}</span>
+                </div>
+                {% endif %}
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Created</span>
+                    <span class="skill-detail-info-value local-time" data-timestamp="{{ memory.created_at|date:'c' }}">{{ memory.created_at|date:"M j, Y" }}</span>
+                </div>
+                <div class="skill-detail-info-row">
+                    <span class="skill-detail-info-label">Updated</span>
+                    <span class="skill-detail-info-value local-time" data-timestamp="{{ memory.updated_at|date:'c' }}">{{ memory.updated_at|date:"M j, Y" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Badges & extra styles -->
+<style>
+.mem-detail-org-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background: rgba(8, 145, 178, 0.1);
+    color: var(--primary);
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.mem-detail-personal-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.mem-detail-doc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.625rem;
+    background: rgba(139, 92, 246, 0.08);
+    color: #8b5cf6;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.mem-alert {
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.mem-alert-success { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+.mem-alert-error, .mem-alert-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+/* Reuse skill-detail-* styles that are defined in skill_detail.html — here we inline them */
+.skill-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    transition: color 0.15s ease;
+}
+.skill-detail-back:hover { color: var(--primary); }
+
+.skill-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.skill-detail-title-section { flex: 1; min-width: 0; }
+
+.skill-detail-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.25rem;
+}
+
+.skill-detail-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+}
+
+.skill-detail-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+.skill-detail-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    min-width: 90px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.skill-detail-btn-secondary {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 2px 6px rgba(8, 145, 178, 0.25);
+}
+.skill-detail-btn-secondary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.3);
+}
+
+.skill-detail-btn-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.skill-detail-btn-danger:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.skill-detail-meta-bar {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1rem 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.skill-detail-meta-item { display: flex; align-items: center; gap: 0.5rem; }
+.skill-detail-meta-item svg { color: var(--text-muted); }
+.skill-detail-meta-value { font-weight: 600; color: var(--text-primary); }
+.skill-detail-meta-label { color: var(--text-muted); font-size: 0.875rem; }
+.skill-detail-meta-divider { width: 1px; height: 24px; background: var(--border-color); }
+
+.skill-detail-content {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 1.5rem;
+}
+.skill-detail-main { display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+
+.skill-detail-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.skill-detail-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+.skill-detail-section-title {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.skill-detail-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.skill-detail-copy-btn:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(8, 145, 178, 0.05);
+}
+.skill-detail-code {
+    margin: 0;
+    padding: 1.25rem;
+    background: var(--bg-primary);
+    font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.skill-detail-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+.skill-detail-sidebar-section {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+}
+.skill-detail-sidebar-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+.skill-detail-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.skill-detail-tag {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+.skill-detail-tag:hover { background: rgba(59, 130, 246, 0.2); }
+
+.skill-detail-info-list { display: flex; flex-direction: column; gap: 0.625rem; }
+.skill-detail-info-row { display: flex; justify-content: space-between; align-items: center; }
+.skill-detail-info-label { color: var(--text-muted); font-size: 0.85rem; }
+.skill-detail-info-value { color: var(--text-primary); font-size: 0.85rem; font-weight: 500; }
+
+/* Delete Modal */
+.mem-delete-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+.mem-delete-modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+.mem-delete-modal-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.mem-delete-modal-icon { color: #ef4444; flex-shrink: 0; }
+.mem-delete-modal-title { margin: 0; font-size: 1.125rem; font-weight: 600; color: var(--text-primary); }
+.mem-delete-modal-text { color: var(--text-primary); margin: 0 0 0.5rem 0; line-height: 1.5; }
+.mem-delete-modal-subtext { color: var(--text-muted); font-size: 0.875rem; margin: 0 0 1.5rem 0; }
+.mem-delete-modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; }
+.mem-delete-modal-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+.mem-delete-modal-btn-cancel {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.mem-delete-modal-btn-cancel:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.mem-delete-modal-btn-delete { background: #ef4444; color: white; }
+.mem-delete-modal-btn-delete:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+@media (max-width: 900px) {
+    .skill-detail-content { grid-template-columns: 1fr; }
+    .skill-detail-sidebar { order: -1; flex-direction: row; flex-wrap: wrap; }
+    .skill-detail-sidebar-section { flex: 1; min-width: 200px; }
+}
+@media (max-width: 600px) {
+    .skill-detail-header { flex-direction: column; gap: 1rem; }
+    .skill-detail-actions { width: 100%; }
+    .skill-detail-btn { flex: 1; justify-content: center; }
+    .skill-detail-meta-bar { gap: 1rem; }
+    .skill-detail-meta-divider { display: none; }
+    .skill-detail-sidebar { flex-direction: column; }
+    .skill-detail-sidebar-section { min-width: 100%; }
+}
+</style>
+
+<script>
+function copyContent() {
+    const content = document.getElementById('memory-content').textContent;
+    navigator.clipboard.writeText(content).then(() => {
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Copied!</span>
+        `;
+        btn.style.color = '#10b981';
+        btn.style.borderColor = '#10b981';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.color = '';
+            btn.style.borderColor = '';
+        }, 2000);
+    });
+}
+
+function openDeleteModal() {
+    document.getElementById('deleteMemoryModal').style.display = 'flex';
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteMemoryModal').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('deleteMemoryModal');
+    if (e.target === modal) closeDeleteModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeDeleteModal();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.local-time').forEach(function(el) {
+        const date = new Date(el.dataset.timestamp);
+        el.textContent = date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    });
+});
+</script>
+
+<!-- Delete Modal -->
+{% if memory.scope == 'organization' and user.is_staff or memory.created_by == user %}
+<div id="deleteMemoryModal" class="mem-delete-modal-overlay" style="display: none;">
+    <div class="mem-delete-modal-content">
+        <div class="mem-delete-modal-header">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="mem-delete-modal-icon">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3 class="mem-delete-modal-title">Delete Memory</h3>
+        </div>
+        <p class="mem-delete-modal-text">Are you sure you want to delete <strong>"{{ memory.title }}"</strong>?</p>
+        <p class="mem-delete-modal-subtext">This action cannot be undone.</p>
+        <div class="mem-delete-modal-actions">
+            <button type="button" class="mem-delete-modal-btn mem-delete-modal-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <form method="post" action="{% url 'memory_delete' memory.pk %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="mem-delete-modal-btn mem-delete-modal-btn-delete">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

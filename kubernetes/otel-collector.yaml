@@ -1,0 +1,185 @@
+# OTel Collector — CodePathfinder Customer Telemetry
+#
+# Receives OTLP from the Django auth proxy and routes to Elasticsearch.
+# NOT exposed externally — only reachable from within the cluster.
+# Auth is enforced by the Django otel_ingest proxy (web/otel_ingest/).
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: codepathfinder
+data:
+  config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+
+    processors:
+      batch:
+        timeout: 10s
+        send_batch_size: 1024
+        send_batch_max_size: 2048
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 512
+        spike_limit_mib: 128
+      transform/route_to_project:
+        error_mode: ignore
+        trace_statements:
+          - context: resource
+            statements:
+              - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+        metric_statements:
+          - context: resource
+            statements:
+              - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+        log_statements:
+          - context: resource
+            statements:
+              - set(attributes["elasticsearch.index.suffix"], attributes["cpf.project.id"])
+
+    exporters:
+      elasticsearch/traces:
+        endpoints:
+          - ${ELASTICSEARCH_ENDPOINT}
+        api_key: ${ELASTICSEARCH_API_KEY}
+        traces_index: "traces-customer.project-"
+        traces_dynamic_index:
+          enabled: true
+        mapping:
+          mode: otel
+
+      elasticsearch/metrics:
+        endpoints:
+          - ${ELASTICSEARCH_ENDPOINT}
+        api_key: ${ELASTICSEARCH_API_KEY}
+        metrics_index: "metrics-customer.project-"
+        metrics_dynamic_index:
+          enabled: true
+        mapping:
+          mode: otel
+        flush:
+          interval: 5s
+          bytes: 5242880
+
+      elasticsearch/logs:
+        endpoints:
+          - ${ELASTICSEARCH_ENDPOINT}
+        api_key: ${ELASTICSEARCH_API_KEY}
+        logs_index: "logs-customer.project-"
+        logs_dynamic_index:
+          enabled: true
+        mapping:
+          mode: otel
+
+    extensions:
+      health_check:
+        endpoint: 0.0.0.0:13133
+
+    service:
+      extensions: [health_check]
+      telemetry:
+        logs:
+          level: info
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, transform/route_to_project, batch]
+          exporters: [elasticsearch/traces]
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, transform/route_to_project, batch]
+          exporters: [elasticsearch/metrics]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, transform/route_to_project, batch]
+          exporters: [elasticsearch/logs]
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector
+  namespace: codepathfinder
+  labels:
+    app: otel-collector
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: otel-collector
+          image: otel/opentelemetry-collector-contrib:0.113.0
+          ports:
+            - containerPort: 4317  # OTLP gRPC
+            - containerPort: 4318  # OTLP HTTP
+            - containerPort: 13133 # Health check
+          env:
+            - name: ELASTICSEARCH_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: ELASTICSEARCH_ENDPOINT
+            - name: ELASTICSEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: ELASTICSEARCH_API_KEY
+          volumeMounts:
+            - name: config
+              mountPath: /etc/otelcol-contrib
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 13133
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "512Mi"
+              cpu: "250m"
+      volumes:
+        - name: config
+          configMap:
+            name: otel-collector-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector-service
+  namespace: codepathfinder
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+    - name: health
+      port: 13133
+      targetPort: 13133
+  type: ClusterIP

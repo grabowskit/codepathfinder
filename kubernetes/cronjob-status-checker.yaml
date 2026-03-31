@@ -1,0 +1,97 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: check-job-status
+  namespace: codepathfinder
+  labels:
+    app: codepathfinder
+    component: status-checker
+spec:
+  # Run every 2 minutes for more responsive progress bar updates
+  schedule: "*/2 * * * *"
+  concurrencyPolicy: Replace  # Replace stale jobs (cloud-sql-proxy sidecar keeps jobs Running after completion)
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: codepathfinder
+            component: status-checker
+        spec:
+          serviceAccountName: codepathfinder-ksa
+          restartPolicy: OnFailure
+          containers:
+          - name: status-checker
+            image: <YOUR_REGISTRY>/codepathfinder/web:latest
+            imagePullPolicy: Always
+            command: ["python", "manage.py", "check_job_status", "--verbose"]
+            env:
+            - name: DJANGO_ENV
+              value: "production"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: DATABASE_URL
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: DJANGO_SECRET_KEY
+            - name: ELASTICSEARCH_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: ELASTICSEARCH_ENDPOINT
+            - name: ELASTICSEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: ELASTICSEARCH_API_KEY
+            - name: CPF_INTERNAL_SERVICE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: CPF_INTERNAL_SERVICE_SECRET
+            - name: LIBRECHAT_EXTERNAL_URL
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: LIBRECHAT_EXTERNAL_URL
+            # Internal OTel instrumentation
+            - name: OTEL_ENABLED
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: "codepathfinder-cronjob"
+            - name: OTEL_COLLECTOR_ENDPOINT
+              value: "http://otel-collector-service.codepathfinder.svc.cluster.local:4318"
+            - name: CPF_PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: codepathfinder-secrets
+                  key: CPF_INTERNAL_PROJECT_ID
+            resources:
+              requests:
+                memory: "128Mi"
+                cpu: "50m"
+              limits:
+                memory: "256Mi"
+                cpu: "100m"
+          
+          # Cloud SQL Proxy sidecar for database access
+          - name: cloud-sql-proxy
+            image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.8.0
+            args:
+              - "--port=5432"
+              - "<YOUR_GCP_PROJECT>:<YOUR_REGION>:<YOUR_CLOUD_SQL_INSTANCE>"
+            securityContext:
+              runAsNonRoot: true
+            resources:
+              requests:
+                memory: "32Mi"
+                cpu: "25m"
+              limits:
+                memory: "64Mi"
+                cpu: "50m"

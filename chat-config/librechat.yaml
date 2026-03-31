@@ -1,0 +1,67 @@
+version: 1.2.1
+cache: false
+
+interface:
+  endpointsMenu: false
+  modelSelect: true
+
+mcpSettings:
+  allowedDomains:
+    - "web"
+
+mcpServers:
+  codepathfinder:
+    type: streamable-http
+    url: "http://web:8000/mcp/"
+    title: "CodePathfinder"
+    description: "Semantic code search, GitHub operations, skills, and job management"
+    headers:
+      Authorization: "Bearer ${CPF_INTERNAL_SERVICE_SECRET}"
+      X-User-Email: "{{LIBRECHAT_USER_EMAIL}}"
+    timeout: 60000
+    initTimeout: 15000
+    startup: true
+
+endpoints:
+  bedrock:
+    availableRegions:
+      - "us-east-2"
+    streamRate: 35
+    titleModel: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+    models:
+      - "us.anthropic.claude-sonnet-4-6"
+      - "us.anthropic.claude-opus-4-6-v1"
+      - "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+modelSpecs:
+  list:
+    - name: "bedrock-claude-sonnet-4-6"
+      label: "Claude Sonnet 4.6"
+      description: "Anthropic Claude Sonnet 4.6 via AWS Bedrock with CodePathfinder tools"
+      default: true
+      mcpServers:
+        - "codepathfinder"
+      preset:
+        endpoint: "bedrock"
+        model: "us.anthropic.claude-sonnet-4-6"
+        mcpServers:
+          - "codepathfinder"
+    - name: "bedrock-claude-opus-4-6"
+      label: "Claude Opus 4.6"
+      description: "Anthropic Claude Opus 4.6 via AWS Bedrock with CodePathfinder tools"
+      mcpServers:
+        - "codepathfinder"
+      preset:
+        endpoint: "bedrock"
+        model: "us.anthropic.claude-opus-4-6-v1"
+        mcpServers:
+          - "codepathfinder"
+    - name: "bedrock-claude-haiku-4-5"
+      label: "Claude Haiku 4.5"
+      description: "Anthropic Claude Haiku 4.5 via AWS Bedrock with CodePathfinder tools"
+      mcpServers:
+        - "codepathfinder"
+      preset:
+        endpoint: "bedrock"
+        model: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+        mcpServers:
+          - "codepathfinder"

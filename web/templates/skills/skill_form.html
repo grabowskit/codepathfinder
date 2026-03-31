@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Skill - CodePathfinder{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <div class="mb-4">
+        <a href="{% url 'skill_list' %}" style="color: var(--text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            Back to Skills
+        </a>
+        <h1>{% if form.instance.pk %}Edit Skill{% else %}Create Skill{% endif %}</h1>
+        <p style="color: var(--text-secondary);">
+            {% if form.instance.pk %}
+            Update the skill definition and instructions.
+            {% else %}
+            Define a new AI agent skill with instructions and metadata.
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="post" class="card" style="padding: 1.5rem;">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-4" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 1rem; border-radius: 8px;">
+            <strong>Please fix the following errors:</strong>
+            <ul style="margin: 0.5rem 0 0 1.5rem;">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <li>{{ field.label }}: {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Name -->
+        <div class="form-group mb-4">
+            <label class="form-label" for="id_name">Name <span style="color: #ef4444;">*</span></label>
+            {{ form.name }}
+            <small class="help-text">Unique identifier for this skill (e.g., 'code-review', 'test-generator')</small>
+            {% if form.name.errors %}
+            <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.name.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="form-group mb-4">
+            <label class="form-label" for="id_description">Description <span style="color: #ef4444;">*</span></label>
+            {{ form.description }}
+            <small class="help-text">Brief description used for search and display</small>
+            {% if form.description.errors %}
+            <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.description.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Instructions -->
+        <div class="form-group mb-4">
+            <label class="form-label" for="id_instructions">Instructions <span style="color: #ef4444;">*</span></label>
+            {{ form.instructions }}
+            <small class="help-text">Full instructions/prompt for the AI agent. Supports markdown formatting.</small>
+            {% if form.instructions.errors %}
+            <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.instructions.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Allowed Tools -->
+        <div class="form-group mb-4">
+            <label class="form-label">Allowed Tools</label>
+            <small class="help-text" style="display: block; margin-bottom: 0.75rem;">Select which tools this skill can use. If none selected, all tools will be available.</small>
+
+            <div id="tools-loading" style="color: var(--text-secondary); padding: 1rem;">
+                Loading available tools...
+            </div>
+
+            <div id="tools-container" style="display: none; max-height: 400px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem;">
+                <!-- Tools will be populated by JavaScript -->
+            </div>
+
+            <div id="tools-error" style="display: none; color: #ef4444; padding: 0.5rem 0;">
+                Failed to load tools. You can still enter tool names manually below.
+            </div>
+
+            <!-- Hidden input to store the JSON array value -->
+            <input type="hidden" name="allowed_tools" id="id_allowed_tools" value="{{ form.allowed_tools.value|default:'[]' }}">
+
+            {% if form.allowed_tools.errors %}
+            <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.allowed_tools.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Tags -->
+        <div class="form-group mb-4">
+            <label class="form-label" for="id_tags">Tags</label>
+            {{ form.tags }}
+            <small class="help-text">JSON array of tags for filtering, e.g., ["python", "testing", "code-quality"]</small>
+            {% if form.tags.errors %}
+            <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.tags.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Curated (admin only) -->
+        {% if user.is_superuser %}
+        <div class="form-group mb-4" style="background: var(--surface-light); padding: 1rem; border-radius: 8px;">
+            <div class="form-check">
+                {{ form.is_curated }}
+                <label class="form-check-label" for="id_is_curated" style="margin-left: 0.5rem;">
+                    Mark as Curated
+                </label>
+            </div>
+            <small class="help-text" style="display: block; margin-top: 0.5rem;">Curated skills are verified by administrators and shown prominently.</small>
+        </div>
+        {% endif %}
+
+        <!-- Submit -->
+        <div class="flex gap-4 mt-4">
+            <a href="{% url 'skill_list' %}" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+                {% if form.instance.pk %}Save Changes{% else %}Create Skill{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add form-control class to textareas that don't have it
+        document.querySelectorAll('textarea, input[type="text"]').forEach(function (el) {
+            if (!el.classList.contains('form-control')) {
+                el.classList.add('form-control');
+            }
+        });
+
+        // Load available tools
+        loadAvailableTools();
+    });
+
+    function loadAvailableTools() {
+        const loadingEl = document.getElementById('tools-loading');
+        const containerEl = document.getElementById('tools-container');
+        const errorEl = document.getElementById('tools-error');
+        const hiddenInput = document.getElementById('id_allowed_tools');
+
+        // Parse currently selected tools
+        let selectedTools = [];
+        try {
+            const value = hiddenInput.value;
+            if (value && value !== 'None') {
+                selectedTools = JSON.parse(value);
+            }
+        } catch (e) {
+            console.error('Error parsing allowed_tools:', e);
+        }
+
+        fetch('{% url "skill_api_tools" %}')
+            .then(response => response.json())
+            .then(data => {
+                loadingEl.style.display = 'none';
+                containerEl.style.display = 'block';
+
+                // Group tools by category
+                const codeSearchTools = [];
+                const githubTools = [];
+                const skillsTools = [];
+
+                data.tools.forEach(tool => {
+                    if (tool.name.startsWith('github_')) {
+                        githubTools.push(tool);
+                    } else if (tool.name.startsWith('skills_')) {
+                        skillsTools.push(tool);
+                    } else {
+                        codeSearchTools.push(tool);
+                    }
+                });
+
+                let html = '';
+
+                // Code Search Tools
+                if (codeSearchTools.length > 0) {
+                    html += renderToolGroup('Code Search', codeSearchTools, selectedTools);
+                }
+
+                // GitHub Tools
+                if (githubTools.length > 0) {
+                    html += renderToolGroup('GitHub', githubTools, selectedTools);
+                }
+
+                // Skills Tools
+                if (skillsTools.length > 0) {
+                    html += renderToolGroup('Skills', skillsTools, selectedTools);
+                }
+
+                containerEl.innerHTML = html;
+
+                // Add event listeners to checkboxes
+                containerEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSelectedTools);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading tools:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+                // Show manual input as fallback
+                const manualInput = document.createElement('textarea');
+                manualInput.className = 'form-control';
+                manualInput.rows = 3;
+                manualInput.placeholder = '["semantic_code_search", "read_file_from_chunks"]';
+                manualInput.value = hiddenInput.value !== 'None' ? hiddenInput.value : '';
+                manualInput.addEventListener('input', function() {
+                    hiddenInput.value = this.value || '[]';
+                });
+                errorEl.after(manualInput);
+            });
+    }
+
+    function renderToolGroup(title, tools, selectedTools) {
+        let html = `
+            <div style="padding: 0.5rem;">
+                <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">
+                    ${title} Tools
+                </div>
+        `;
+
+        tools.forEach(tool => {
+            const isChecked = selectedTools.includes(tool.name);
+            const description = tool.description.split('\n')[0].substring(0, 80);
+            html += `
+                <label style="display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.5rem; cursor: pointer; border-radius: 4px; transition: background 0.15s;"
+                       onmouseover="this.style.background='var(--surface-light)'"
+                       onmouseout="this.style.background='transparent'">
+                    <input type="checkbox" name="tool_checkbox" value="${tool.name}" ${isChecked ? 'checked' : ''}
+                           style="margin-top: 0.25rem; accent-color: var(--primary-color);">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; color: var(--text-primary); font-family: monospace; font-size: 0.85rem;">
+                            ${tool.name}
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.15rem;">
+                            ${description}${tool.description.length > 80 ? '...' : ''}
+                        </div>
+                    </div>
+                </label>
+            `;
+        });
+
+        html += '</div>';
+        return html;
+    }
+
+    function updateSelectedTools() {
+        const hiddenInput = document.getElementById('id_allowed_tools');
+        const checkboxes = document.querySelectorAll('input[name="tool_checkbox"]:checked');
+        const selectedTools = Array.from(checkboxes).map(cb => cb.value);
+        hiddenInput.value = JSON.stringify(selectedTools);
+    }
+</script>
+{% endblock %}

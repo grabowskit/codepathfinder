@@ -1,0 +1,41 @@
+{
+  "name": "@grabowskit/mcp-bridge",
+  "version": "1.0.0",
+  "description": "MCP bridge for CodePathfinder - proxies tool calls to CodePathfinder API",
+  "main": "build/index.js",
+  "type": "module",
+  "bin": {
+    "codepathfinder-mcp": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node build/index.js",
+    "dev": "tsc && node build/index.js",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "code-search",
+    "semantic-search",
+    "codepathfinder"
+  ],
+  "author": "CodePathfinder",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/pathfinder"
+  }
+}

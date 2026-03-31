@@ -1,0 +1,36 @@
+Django>=4.2,<5.0
+kubernetes>=28.1.0
+docker>=7.0.0
+python-dotenv>=1.0.0
+
+# Production dependencies
+psycopg2-binary>=2.9.9  # PostgreSQL adapter
+gunicorn>=21.2.0         # WSGI server
+dj-database-url>=2.1.0   # Database URL parsing
+whitenoise>=6.6.0        # Static file serving
+django-allauth>=0.57.0   # Social authentication
+PyJWT[crypto]>=2.8.0     # Required by allauth google provider
+cryptography>=41.0.0     # Required by PyJWT[crypto]
+django-oauth-toolkit==2.3.0
+djangorestframework>=3.14.0  # REST API framework
+drf-spectacular>=0.26.2  # OpenAPI 3.0 documentation
+elasticsearch>=8.0.0
+httpx>=0.25.0  # Async HTTP client
+PyGithub>=2.1.0,<3.0  # GitHub API for write operations
+PyYAML>=6.0  # For YAML parsing
+
+# LLM SDKs — used by the embedded chat side panel
+anthropic>=0.40.0        # Direct Anthropic API + AnthropicBedrock client
+openai>=1.0.0            # OpenAI GPT models
+boto3>=1.34.0            # AWS SDK (Bedrock credentials)
+
+# OpenTelemetry — internal observability (traces + metrics → OTel Collector)
+opentelemetry-sdk>=1.25.0
+opentelemetry-exporter-otlp-proto-http>=1.25.0
+opentelemetry-instrumentation-django>=0.46b0
+
+# Testing dependencies
+pytest>=7.4.0
+pytest-timeout>=2.2.0
+pytest-json-report>=1.5.0
+requests>=2.31.0

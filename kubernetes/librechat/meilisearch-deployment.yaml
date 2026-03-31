@@ -1,0 +1,82 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: meilisearch-data
+  namespace: codepathfinder
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: meilisearch
+  namespace: codepathfinder
+  labels:
+    app: meilisearch
+spec:
+  type: ClusterIP
+  selector:
+    app: meilisearch
+  ports:
+  - name: http
+    port: 7700
+    targetPort: 7700
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meilisearch
+  namespace: codepathfinder
+  labels:
+    app: meilisearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: meilisearch
+  template:
+    metadata:
+      labels:
+        app: meilisearch
+    spec:
+      containers:
+      - name: meilisearch
+        image: getmeili/meilisearch:v1.37.0
+        ports:
+        - containerPort: 7700
+          name: http
+        env:
+        - name: MEILI_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: MEILI_MASTER_KEY
+        - name: MEILI_NO_ANALYTICS
+          value: "true"
+        volumeMounts:
+        - name: meilisearch-data
+          mountPath: /meili_data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 7700
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+      volumes:
+      - name: meilisearch-data
+        persistentVolumeClaim:
+          claimName: meilisearch-data

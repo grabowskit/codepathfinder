@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: codepathfinder-ingress
+  namespace: codepathfinder
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: "<YOUR_MAIN_CERT_NAME>"
+    kubernetes.io/ingress.global-static-ip-name: "<YOUR_MAIN_STATIC_IP_NAME>"
+spec:
+  rules:
+  - host: <YOUR_DOMAIN>
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: codepathfinder-service
+            port:
+              number: 80
+  - host: www.<YOUR_DOMAIN>
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: codepathfinder-service
+            port:
+              number: 80

@@ -1,0 +1,203 @@
+---
+# BackendConfig: WebSocket support + extended timeout for AI responses
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: librechat-backend-config
+  namespace: codepathfinder
+spec:
+  timeoutSec: 300
+  connectionDraining:
+    drainingTimeoutSec: 60
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 3080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: librechat-service
+  namespace: codepathfinder
+  labels:
+    app: librechat
+  annotations:
+    cloud.google.com/backend-config: '{"default": "librechat-backend-config"}'
+spec:
+  type: NodePort
+  selector:
+    app: librechat
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3080
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: librechat
+  namespace: codepathfinder
+  labels:
+    app: librechat
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: librechat
+  template:
+    metadata:
+      labels:
+        app: librechat
+    spec:
+      imagePullSecrets:
+      - name: artifact-registry-key
+      containers:
+      - name: librechat
+        image: ghcr.io/danny-avila/librechat:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3080
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "3080"
+        - name: MONGO_URI
+          value: "mongodb://mongodb.codepathfinder.svc.cluster.local:27017/LibreChat"
+        - name: MEILI_HOST
+          value: "http://meilisearch.codepathfinder.svc.cluster.local:7700"
+        - name: CONFIG_PATH
+          value: "/app/librechat.yaml"
+        - name: ALLOW_REGISTRATION
+          value: "false"
+        - name: ALLOW_EMAIL_LOGIN
+          value: "false"
+        - name: ALLOW_SOCIAL_LOGIN
+          value: "true"
+        - name: ALLOW_SOCIAL_REGISTRATION
+          value: "true"
+        - name: DOMAIN_CLIENT
+          value: "https://chat.<YOUR_DOMAIN>"
+        - name: DOMAIN_SERVER
+          value: "https://chat.<YOUR_DOMAIN>"
+        # OIDC — CodePathfinder is the identity provider
+        - name: OPENID_ISSUER
+          value: "https://<YOUR_DOMAIN>/o"
+        - name: OPENID_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: OPENID_CLIENT_ID
+        - name: OPENID_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: OPENID_CLIENT_SECRET
+        - name: OPENID_SESSION_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: OPENID_SESSION_SECRET
+        - name: OPENID_CALLBACK_URL
+          value: "/oauth/openid/callback"
+        - name: OPENID_SCOPE
+          value: "openid profile email"
+        - name: OPENID_BUTTON_LABEL
+          value: "Log in with CodePathfinder"
+        - name: OPENID_AUTO_REDIRECT
+          value: "true"
+        - name: OPENID_USE_END_SESSION_ENDPOINT
+          value: "true"
+        - name: OPENID_POST_LOGOUT_REDIRECT_URI
+          value: "https://<YOUR_DOMAIN>"
+        # Secrets
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: OPENAI_API_KEY
+        - name: ANTHROPIC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: ANTHROPIC_API_KEY
+        # AWS Bedrock
+        - name: BEDROCK_AWS_DEFAULT_REGION
+          value: "us-east-2"
+        - name: BEDROCK_AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: BEDROCK_AWS_ACCESS_KEY_ID
+        - name: BEDROCK_AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: BEDROCK_AWS_SECRET_ACCESS_KEY
+        - name: CPF_INTERNAL_SERVICE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: CPF_INTERNAL_SERVICE_SECRET
+        - name: MEILI_MASTER_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: MEILI_MASTER_KEY
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: JWT_SECRET
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: JWT_REFRESH_SECRET
+        - name: CREDS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: CREDS_KEY
+        - name: CREDS_IV
+          valueFrom:
+            secretKeyRef:
+              name: librechat-secrets
+              key: CREDS_IV
+        volumeMounts:
+        - name: librechat-config
+          mountPath: /app/librechat.yaml
+          subPath: librechat.yaml
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3080
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3080
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 3
+      volumes:
+      - name: librechat-config
+        configMap:
+          name: librechat-config

@@ -1,0 +1,571 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Documentation - CodePathfinder{% endblock %}
+
+{% block guest_layout %}
+<div class="landing-page">
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="landing-nav-content">
+                <a href="{% url 'home' %}" class="landing-logo">
+                    <img src="{% static 'img/logo-icon-light.png' %}" alt="CodePathfinder" class="landing-logo-img">
+                    <span class="landing-logo-text">CodePathfinder</span>
+                </a>
+                <div class="landing-nav-links">
+                    <a href="{% url 'home' %}#features" class="landing-nav-link">Features</a>
+                    <a href="{% url 'home' %}#use-cases" class="landing-nav-link">Use Cases</a>
+                    <a href="{% url 'home' %}#integration" class="landing-nav-link">Integration</a>
+                    <a href="{% url 'documentation' %}" class="landing-nav-link" style="color: var(--primary);">Docs</a>
+                </div>
+                <div class="landing-nav-cta">
+                    <a href="{% url 'account_login' %}" class="btn btn-primary">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Documentation Content -->
+    <section style="padding-top: 100px; min-height: 100vh;">
+        <div class="container" style="max-width: 900px; padding-bottom: 4rem;">
+            <div class="mb-6">
+                <h1>Documentation</h1>
+                <p style="color: var(--text-secondary);">Complete guide to using CodePathfinder for semantic code search
+                    and indexing.</p>
+            </div>
+
+            <!-- Table of Contents -->
+            <div class="card mb-6" style="background: var(--bg-secondary);">
+                <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Contents</h2>
+                <nav>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#getting-started" style="color: var(--primary);">1.
+                                Getting Started</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#supported-languages"
+                                style="color: var(--primary);">2. Supported Languages</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#use-cases" style="color: var(--primary);">3. Use
+                                Cases & Examples</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#project-management"
+                                style="color: var(--primary);">4. Project Management</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#api-mcp" style="color: var(--primary);">5. API &
+                                MCP Tool Calling</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#chat-api" style="color: var(--primary);">6. Chat
+                                API</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">7.
+                                Troubleshooting</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Getting Started -->
+            <div class="card mb-6" id="getting-started">
+                <h2>1. Getting Started</h2>
+                <p style="margin-bottom: 1.5rem;">CodePathfinder helps you index and semantically search your GitHub
+                    repositories. Once indexed, you can use Claude Desktop or the API to search your codebase using
+                    natural language.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What is CodePathfinder?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder is a semantic code search
+                    platform that:</p>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;">Creates vector embeddings and indexes from your GitHub
+                        repositories for intelligent search</li>
+                    <li style="margin-bottom: 0.5rem;">Uses AI-powered semantic search to find relevant code by meaning,
+                        not just keywords</li>
+                    <li style="margin-bottom: 0.5rem;">Integrates with Claude Desktop, ChatGPT, and Gemini via MCP (Model Context Protocol)
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">Provides 21 powerful tools for code search, GitHub operations, skills, and job management</li>
+                    <li style="margin-bottom: 0.5rem;">Supports 17+ programming languages and file formats natively</li>
+                    <li style="margin-bottom: 0.5rem;">Includes an AI Chat interface powered by LibreChat with multi-model support (GPT-5, Claude Sonnet 4)</li>
+                </ul>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Quick Start Guide</h3>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Join the Private Beta</strong><br>
+                        <a href="{% url 'beta_signup' %}" style="color: var(--primary);">Request early access</a> to
+                        CodePathfinder.
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Create a Project</strong><br>
+                        Navigate to <strong>Projects</strong> and click <strong>+ New Project</strong>.
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Configure Your Repository</strong><br>
+                        Enter your repository URL and GitHub token (for private repos).
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Run the Indexer</strong><br>
+                        Click <strong>Save & Run</strong> to start indexing. Your code will be analyzed and vector
+                        embeddings created.
+                    </li>
+                    <li style="margin-bottom: 1rem;">
+                        <strong>Start Chatting or Connect Claude Desktop</strong><br>
+                        Use the built-in AI Chat at <strong>/chat/</strong>, or generate an API key to connect Claude Desktop.
+                    </li>
+                </ol>
+            </div>
+
+            <!-- Supported Languages -->
+            <div class="card mb-6" id="supported-languages">
+                <h2>2. Supported Languages</h2>
+                <p style="margin-bottom: 1.5rem;">CodePathfinder provides native syntax analysis and intelligent parsing
+                    for a wide range of programming languages and file formats.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Programming Languages</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🐍
+                        Python</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">📘
+                        TypeScript</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🟨
+                        JavaScript</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">☕
+                        Java</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🐹
+                        Go</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">⚙️
+                        C</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">⚙️
+                        C++</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🗄️
+                        SQL</span>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Configuration & Data Formats
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">📋
+                        YAML</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">📋
+                        JSON</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🐘
+                        Gradle</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">⚙️
+                        Properties</span>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Documentation & Templates</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">📝
+                        Markdown</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">🔧
+                        Handlebars</span>
+                    <span
+                        style="background: var(--bg-secondary); padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.9rem;">📄
+                        Plain Text</span>
+                </div>
+
+                <div
+                    style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0;">
+                    <p style="margin: 0; font-size: 0.9rem;">
+                        <strong>Note:</strong> All supported file types get intelligent chunking and vector embeddings
+                        for semantic search. Programming languages additionally receive syntax-aware analysis for
+                        functions, classes, and symbols.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Use Cases & Examples -->
+            <div class="card mb-6" id="use-cases">
+                <h2>3. Use Cases & Examples</h2>
+                <p style="margin-bottom: 1.5rem;">Here's how teams are using CodePathfinder to supercharge their
+                    development workflows.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">🚀 Developer Onboarding</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">New team members can ask natural
+                    language questions about unfamiliar codebases:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Example queries:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>"How does user authentication work in this project?"</li>
+                        <li>"Where are the API endpoints defined?"</li>
+                        <li>"Show me how database migrations are handled"</li>
+                        <li>"What testing framework is used and where are the tests?"</li>
+                    </ul>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">🔍 Code Discovery</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Find code by describing what it does,
+                    not by guessing variable names:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Example queries:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>"Find code that sends email notifications"</li>
+                        <li>"Where is the payment processing logic?"</li>
+                        <li>"Show me functions that validate user input"</li>
+                        <li>"Find all places that interact with the cache"</li>
+                    </ul>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">📊 Code Analysis</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Get insights about your codebase
+                    structure and patterns:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Example queries:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>"List all public API functions in the user module"</li>
+                        <li>"Find functions that don't have documentation"</li>
+                        <li>"What classes inherit from BaseModel?"</li>
+                        <li>"Show me all usages of the deprecated function X"</li>
+                    </ul>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">🛡️ Security & Compliance</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Identify potential security concerns and
+                    compliance issues:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Example queries:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>"Find places where user passwords are handled"</li>
+                        <li>"Show me all SQL queries that use string concatenation"</li>
+                        <li>"Where are API keys or secrets referenced?"</li>
+                        <li>"Find code that handles file uploads"</li>
+                    </ul>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">📝 Documentation Generation</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Identify gaps in documentation and
+                    generate content:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Example queries:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>"Find all public functions without docstrings"</li>
+                        <li>"Generate documentation for the UserService class"</li>
+                        <li>"Summarize what the payment module does"</li>
+                        <li>"Create a README section explaining the API structure"</li>
+                    </ul>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">🤖 AI Agent Integration</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Give your AI agents deep understanding
+                    of your codebase:</p>
+                <div
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <p style="margin: 0 0 0.5rem; color: var(--text-muted);">Use cases:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: var(--text-secondary);">
+                        <li>Claude Desktop MCP integration for conversational code exploration</li>
+                        <li>Custom AI workflows that need codebase context</li>
+                        <li>Automated code review with full project understanding</li>
+                        <li>Building code-aware chatbots for your development team</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Project Management -->
+            <div class="card mb-6" id="project-management">
+                <h2>4. Project Management</h2>
+                <p style="margin-bottom: 1.5rem;">Projects are the core of CodePathfinder. Each project represents a
+                    GitHub repository that you want to index and search.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Creating a Project</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color);">
+                            <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Field</th>
+                            <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody style="color: var(--text-secondary);">
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.75rem;"><strong>Name</strong></td>
+                            <td style="padding: 0.75rem;">A descriptive name for your project</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.75rem;"><strong>Repository URL</strong></td>
+                            <td style="padding: 0.75rem;">Full HTTPS URL to your GitHub repository</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.75rem;"><strong>GitHub Token</strong></td>
+                            <td style="padding: 0.75rem;">Personal Access Token for private repos</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem;"><strong>Branch</strong></td>
+                            <td style="padding: 0.75rem;">Specific branch to index (optional)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div
+                    style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0;">
+                    <p style="margin: 0; font-size: 0.9rem;">
+                        <strong>Hint:</strong> For private repositories, you'll need a GitHub Personal Access Token with
+                        <code>repo</code> scope.
+                    </p>
+                </div>
+            </div>
+
+            <!-- API & MCP Tools -->
+            <div class="card mb-6" id="api-mcp">
+                <h2>5. API & MCP Tool Calling</h2>
+                <p style="margin-bottom: 1.5rem;">CodePathfinder provides a REST API and MCP (Model Context Protocol)
+                    integration for programmatic access to your indexed code. MCP is supported by Claude, ChatGPT,
+                    Google Gemini, and other AI agents.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">🟣 Claude Desktop (Recommended)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Connect via OAuth — no API key needed:</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                    <li style="margin-bottom: 0.5rem;">Open Claude Desktop → <strong>Settings → Connectors</strong></li>
+                    <li style="margin-bottom: 0.5rem;">Click <strong>Add Connector</strong> → <strong>Custom</strong></li>
+                    <li style="margin-bottom: 0.5rem;">Enter Name: <code>CodePathfinder</code>, URL: <code>https://codepathfinder.com/mcp</code></li>
+                    <li style="margin-bottom: 0.5rem;">Click <strong>Add</strong>, then authorize with your CodePathfinder account</li>
+                </ol>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">Alternatively, use an API key with the MCP bridge in <code>claude_desktop_config.json</code>:</p>
+                <pre
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">
+{
+  "mcpServers": {
+    "codepathfinder": {
+      "command": "npx",
+      "args": ["-y", "@grabowskit/mcp-bridge"],
+      "env": {
+        "CODEPATHFINDER_API_KEY": "YOUR_API_KEY",
+        "CODEPATHFINDER_API_ENDPOINT": "https://codepathfinder.com/mcp/"
+      }
+    }
+  }
+}</pre>
+
+                <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">🟢 ChatGPT (Developer Mode)</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">ChatGPT supports MCP through Developer
+                    Mode (available for Pro, Plus, Business, and Enterprise accounts):</p>
+                <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                    <li style="margin-bottom: 0.5rem;">Go to <strong>Settings</strong> → <strong>Apps &
+                            Connectors</strong> → <strong>Advanced settings</strong></li>
+                    <li style="margin-bottom: 0.5rem;">Toggle <strong>Developer mode</strong> ON</li>
+                    <li style="margin-bottom: 0.5rem;">In the <strong>Connectors</strong> tab, click <strong>Create
+                            app</strong></li>
+                    <li style="margin-bottom: 0.5rem;">Configure with your CodePathfinder MCP endpoint:
+                        <pre
+                            style="background: var(--bg-primary); padding: 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.5rem;">
+URL: https://codepathfinder.com/mcp/
+Authorization: Bearer YOUR_API_KEY</pre>
+                    </li>
+                    <li style="margin-bottom: 0.5rem;">In conversations, select <strong>Developer mode</strong> from the
+                        "+" menu and choose your connector</li>
+                </ol>
+
+                <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">🔵 Google Gemini</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">Gemini supports MCP through the Gemini CLI
+                    and Gemini Code Assist:</p>
+                <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <p style="margin: 0 0 0.75rem; font-weight: bold; font-size: 0.95rem;">Gemini CLI Configuration</p>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Add to your
+                        Gemini CLI config:</p>
+                    <pre
+                        style="background: var(--bg-primary); padding: 0.5rem; border-radius: 4px; font-size: 0.8rem; margin: 0;">
+{
+  "mcpServers": {
+    "codepathfinder": {
+      "command": "npx",
+      "args": ["-y", "@grabowskit/mcp-bridge"],
+      "env": {
+        "CODEPATHFINDER_API_KEY": "YOUR_API_KEY",
+        "CODEPATHFINDER_API_ENDPOINT": "https://codepathfinder.com/mcp/"
+      }
+    }
+  }
+}</pre>
+                </div>
+
+                <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">🔧 Direct MCP API Access</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1rem;">For custom integrations or other AI
+                    agents, use the MCP endpoint directly (MCP 2025-06-18 Streamable HTTP):</p>
+                <pre
+                    style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">
+POST https://codepathfinder.com/mcp/
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "semantic_code_search",
+    "arguments": {
+      "query": "authentication middleware"
+    }
+  }
+}</pre>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available MCP Tools (21 Total)</h3>
+
+                <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">Code Search (6 tools)</h4>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>semantic_code_search</code> - Natural language code search<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Find code by describing what it
+                            does: "authentication middleware", "database connection handling"</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>map_symbols_by_query</code> - Find functions, classes, methods<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Search for specific symbols: "all
+                            functions in UserService", "classes that extend BaseModel"</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>symbol_analysis</code> - Analyze definitions and usages<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Get detailed information about a
+                            symbol: where it's defined, where it's used, its documentation</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>read_file_from_chunks</code> - Read complete files<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Reconstruct and read any indexed
+                            file from the repository</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>document_symbols</code> - Find undocumented code<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Identify functions and classes that
+                            lack documentation</span>
+                    </li>
+                    <li style="margin-bottom: 0.75rem;">
+                        <code>size</code> - Get project statistics<br>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">View indexed file counts, storage
+                            size, and coverage information</span>
+                    </li>
+                </ul>
+
+                <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">GitHub Integration (7 tools)</h4>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.5rem;"><code>github_create_issue</code> - Create issues with title, body, and labels</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_add_comment</code> - Add comments to issues or PRs</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_create_pull_request</code> - Create pull requests</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_create_branch</code> - Create new branches</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_list_branches</code> - List repository branches</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_get_repo_info</code> - Get repository metadata</li>
+                    <li style="margin-bottom: 0.5rem;"><code>github_get_labels</code> - Get repository labels</li>
+                </ul>
+
+                <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">Skills (6 tools)</h4>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.5rem;"><code>skills_list</code>, <code>skills_get</code>, <code>skills_search</code> - Browse and find AI agent skills</li>
+                    <li style="margin-bottom: 0.5rem;"><code>skills_sync</code>, <code>skills_import</code>, <code>skills_activate</code> - Manage and sync skills</li>
+                </ul>
+
+                <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 0.75rem;">Job Management (2 tools)</h4>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.5rem;"><code>job_manage</code> - Start, stop, or reset indexing jobs</li>
+                    <li style="margin-bottom: 0.5rem;"><code>job_status</code> - Get job status information</li>
+                </ul>
+            </div>
+
+            <!-- AI Chat -->
+            <div class="card mb-6" id="chat-api">
+                <h2>6. AI Chat</h2>
+                <p style="margin-bottom: 1.5rem;">CodePathfinder includes a built-in AI Chat interface powered by LibreChat, available at <strong>/chat/</strong> after signing in.</p>
+
+                <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Features</h3>
+                <ul style="margin-left: 1.5rem; color: var(--text-secondary);">
+                    <li style="margin-bottom: 0.5rem;">Multi-model support: GPT-5, GPT-5 Mini, GPT-5.2, Claude Sonnet 4, Claude 3.5 Haiku</li>
+                    <li style="margin-bottom: 0.5rem;">All 21 CodePathfinder MCP tools available to the AI assistant</li>
+                    <li style="margin-bottom: 0.5rem;">Conversation history, artifact sharing, and model presets</li>
+                    <li style="margin-bottom: 0.5rem;">Search code, create GitHub issues, manage branches — all from chat</li>
+                </ul>
+
+                <div
+                    style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1rem;">
+                    <p style="margin: 0; font-size: 0.9rem;">
+                        The Chat interface connects to your indexed projects automatically. Just ask questions about your code!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Troubleshooting -->
+            <div class="card mb-6" id="troubleshooting">
+                <h2>7. Troubleshooting</h2>
+                <p style="margin-bottom: 1.5rem;">Common issues and how to resolve them.</p>
+
+                <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Indexer is stuck in "Running"
+                        status</summary>
+                    <div style="padding: 0 1rem 1rem;">
+                        <p style="color: var(--text-secondary);">Click Stop, check the Console for errors, and try
+                            running again. Enable "Clean Index" if the problem persists.</p>
+                    </div>
+                </details>
+
+                <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Private repository indexing
+                        fails</summary>
+                    <div style="padding: 0 1rem 1rem;">
+                        <p style="color: var(--text-secondary);">Ensure your GitHub token has <code>repo</code> scope
+                            and hasn't expired.</p>
+                    </div>
+                </details>
+
+                <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Search returns no results
+                    </summary>
+                    <div style="padding: 0 1rem 1rem;">
+                        <p style="color: var(--text-secondary);">Verify the project is indexed (status should be
+                            "Completed"). Check that the project visibility toggle is ON.</p>
+                    </div>
+                </details>
+
+                <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Claude Desktop can't connect
+                    </summary>
+                    <div style="padding: 0 1rem 1rem;">
+                        <p style="color: var(--text-secondary);">Verify your API key is correct and hasn't been revoked.
+                            Ensure the MCP bridge config has the correct endpoint URL.</p>
+                    </div>
+                </details>
+
+                <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                    <summary style="padding: 1rem; cursor: pointer; font-weight: bold;">Some files aren't being indexed
+                    </summary>
+                    <div style="padding: 0 1rem 1rem;">
+                        <p style="color: var(--text-secondary);">Check if the file type is supported (see Supported
+                            Languages section). Very large files may be skipped. Binary files and common directories
+                            like node_modules are excluded by default.</p>
+                    </div>
+                </details>
+            </div>
+
+            <!-- CTA -->
+            <div class="card"
+                style="text-align: center; background: linear-gradient(135deg, rgba(8, 145, 178, 0.1), rgba(34, 211, 238, 0.1));">
+                <h3 style="margin-bottom: 1rem;">Ready to get started?</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Join the Private Beta and unlock the
+                    power of semantic code search.</p>
+                <a href="{% url 'beta_signup' %}" class="btn btn-primary btn-lg">Join Private Beta 🚀</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+</div>
+
+<script>
+    // Navigation scroll effect
+    window.addEventListener('scroll', function () {
+        const nav = document.querySelector('.landing-nav');
+        if (window.scrollY > 50) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    });
+</script>
+{% endblock %}
