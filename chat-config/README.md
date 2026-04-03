@@ -44,12 +44,28 @@ This directory contains LibreChat configuration files for the embedded chat pane
    touch chat-config/.env
    ```
 
-3. Configure AWS Bedrock credentials in `.env`:
+3. Configure your LLM provider credentials in `.env` (examples):
    ```env
+   # AWS Bedrock (Anthropic Claude)
    BEDROCK_AWS_ACCESS_KEY_ID=your_key
    BEDROCK_AWS_SECRET_ACCESS_KEY=your_secret
    BEDROCK_AWS_DEFAULT_REGION=us-east-2
+
+   # OR OpenAI
+   OPENAI_API_KEY=sk-your_openai_key
+
+   # OR Anthropic Direct
+   ANTHROPIC_API_KEY=sk-ant-your_anthropic_key
+
+   # OR Google Gemini
+   GOOGLE_API_KEY=your_google_key
+
+   # OR Azure OpenAI
+   AZURE_API_KEY=your_azure_key
+   AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
    ```
+
+   See LibreChat documentation for full list of supported providers.
 
 4. Start services:
    ```bash

@@ -1,3 +1,13 @@
+# LibreChat Base Configuration (OSS)
+# This is an example configuration using AWS Bedrock with Claude models.
+# LibreChat supports many LLM providers - modify this file to use:
+#   - OpenAI (GPT-4o, o1, etc.)
+#   - Anthropic (Claude direct API)
+#   - Google (Gemini)
+#   - Azure OpenAI
+#   - And many more
+# See: https://www.librechat.ai/docs/configuration/librechat_yaml
+
 version: 1.2.1
 cache: false
 

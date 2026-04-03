@@ -80,12 +80,12 @@ When someone clones the public repo, they get:
 
 1. **Base LibreChat config** (`librechat.base.yaml`)
    - Only CodePathfinder MCP server
-   - AWS Bedrock endpoint configured
+   - Example LLM provider configuration (AWS Bedrock with Claude)
    - Clean, production-ready setup
 
 2. **Setup instructions** (`chat-config/README.md`)
    - How to create `librechat.yaml` from base
-   - How to configure AWS credentials
+   - How to configure any LLM provider (OpenAI, Anthropic, Google, AWS Bedrock, Azure, etc.)
    - Optional: how to add their own MCP servers
 
 3. **No private infrastructure**

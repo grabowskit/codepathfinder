@@ -1,6 +1,6 @@
 # CodePathfinder
 
-A semantic code indexing, search, and AI-powered chat platform. Index GitHub repositories, search code by intent, and interact with your codebase through an embedded AI assistant and LibreChat, both powered by Claude via AWS Bedrock and MCP.
+A semantic code indexing, search, and AI-powered chat platform. Index GitHub repositories, search code by intent, and interact with your codebase through an embedded AI assistant and LibreChat. Supports any LLM provider (OpenAI, Anthropic, Google, AWS Bedrock, Azure, etc.) with Model Context Protocol (MCP) integration.
 
 ## Architecture
 
@@ -16,8 +16,8 @@ A semantic code indexing, search, and AI-powered chat platform. Index GitHub rep
                      └──────────────────┘         │    LibreChat     │
                                                   │  (full chat UI)  │
                      ┌──────────────────┐         └──────────────────┘
-                     │   AWS Bedrock    │◀──── Claude Sonnet/Opus/Haiku
-                     │  (Claude models) │
+                     │   LLM Providers  │◀──── OpenAI, Anthropic, Google,
+                     │  (configurable)  │      AWS Bedrock, Azure, etc.
                      └──────────────────┘
 
 ┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐
@@ -116,7 +116,7 @@ See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for full setup details including manu
 
 ### AI Chat (via LibreChat)
 - Chat with your codebase through an embedded LibreChat interface at `/chat/`
-- Multi-model support: GPT-5, GPT-5 Mini, GPT-5.2, Claude Sonnet 4, Claude 3.5 Haiku
+- Multi-model support: OpenAI (GPT-4o, o1, etc.), Anthropic (Claude), Google (Gemini), AWS Bedrock, Azure, and more
 - All models have access to CodePathfinder MCP tools by default
 - Artifact sharing and conversation export
 
@@ -188,7 +188,7 @@ pathfinder/
 │   ├── projects/                 # Project management, job orchestration
 │   ├── chat/                     # Embedded panel + LibreChat embed
 │   │   ├── librechat_config.py   # Parses librechat.yaml for shared model list
-│   │   ├── llm_stream.py         # SSE streaming (Bedrock, Anthropic, OpenAI)
+│   │   ├── llm_stream.py         # SSE streaming (supports multiple LLM providers)
 │   │   └── views.py              # ChatStreamV2View (/chat/stream/), ChatModelsView
 │   ├── mcp_server/               # MCP server (streamable + SSE)
 │   │   ├── streamable.py         # Primary MCP endpoint (/mcp/)
