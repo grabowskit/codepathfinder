@@ -143,9 +143,9 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         return True
     
     def authentication_error(self, request, provider_id, error=None, exception=None, extra_context=None):
-        """Handle authentication errors by redirecting to beta page."""
+        """Handle authentication errors by redirecting to login page."""
         from django.shortcuts import redirect
-        return redirect('beta_signup')
+        return redirect('account_login')
     
     def save_user(self, request, sociallogin, form=None):
         """

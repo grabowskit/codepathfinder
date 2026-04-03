@@ -8,14 +8,6 @@ class User(AbstractUser):
     Custom User model for CodePathfinder.
     Standard users are active by default and do not require Admin approval.
     """
-    favorite_chat_project = models.ForeignKey(
-        'projects.PathfinderProject',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='favorited_by_users',
-        help_text="Default project for chat interface"
-    )
     setup_wizard_completed_at = models.DateTimeField(
         null=True,
         blank=True,

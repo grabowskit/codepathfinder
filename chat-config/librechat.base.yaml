@@ -20,9 +20,13 @@ mcpServers:
       X-User-Email: "{{LIBRECHAT_USER_EMAIL}}"
     timeout: 60000
     initTimeout: 15000
-    startup: true
+    startup: false
 
 endpoints:
+  openAI:
+    disabled: true
+  assistants:
+    disabled: true
   bedrock:
     availableRegions:
       - "us-east-2"
@@ -33,11 +37,15 @@ endpoints:
       - "us.anthropic.claude-opus-4-6-v1"
       - "us.anthropic.claude-haiku-4-5-20251001-v1:0"
 modelSpecs:
+  enforce: true
+  prioritize: true
   list:
     - name: "bedrock-claude-sonnet-4-6"
       label: "Claude Sonnet 4.6"
       description: "Anthropic Claude Sonnet 4.6 via AWS Bedrock with CodePathfinder tools"
       default: true
+      showIconInMenu: true
+      iconURL: "https://docs.anthropic.com/images/claude-logo-icon.svg"
       mcpServers:
         - "codepathfinder"
       preset:
@@ -48,6 +56,8 @@ modelSpecs:
     - name: "bedrock-claude-opus-4-6"
       label: "Claude Opus 4.6"
       description: "Anthropic Claude Opus 4.6 via AWS Bedrock with CodePathfinder tools"
+      showIconInMenu: true
+      iconURL: "https://docs.anthropic.com/images/claude-logo-icon.svg"
       mcpServers:
         - "codepathfinder"
       preset:
@@ -58,6 +68,8 @@ modelSpecs:
     - name: "bedrock-claude-haiku-4-5"
       label: "Claude Haiku 4.5"
       description: "Anthropic Claude Haiku 4.5 via AWS Bedrock with CodePathfinder tools"
+      showIconInMenu: true
+      iconURL: "https://docs.anthropic.com/images/claude-logo-icon.svg"
       mcpServers:
         - "codepathfinder"
       preset:

@@ -5,7 +5,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from .models import PathfinderProject
 from .forms import ProjectForm
-from .utils import trigger_indexer_job, stop_indexer_job, check_and_update_project_status, delete_elasticsearch_index, get_es_client
+from .utils import trigger_indexer_job, stop_indexer_job, check_and_update_project_status, delete_elasticsearch_index, get_es_client, reset_project_progress
 
 
 
@@ -52,6 +52,7 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         if 'save_run' in self.request.POST:
             form.instance.status = 'running'
             form.instance.save() # Save first to get ID
+            reset_project_progress(form.instance)
             success, msg = trigger_indexer_job(form.instance)
             if success:
                 messages.success(self.request, 'Project saved and indexing job started.')
@@ -83,6 +84,7 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         if 'save_run' in self.request.POST:
             form.instance.status = 'running'
             form.instance.save()
+            reset_project_progress(form.instance)
             success, msg = trigger_indexer_job(form.instance)
             if success:
                 messages.success(self.request, 'Project updated and indexing job started.')
@@ -191,6 +193,7 @@ class ProjectActionView(LoginRequiredMixin, View):
         if action == 'run':
             project.status = 'running'
             project.save()
+            reset_project_progress(project)
             success, msg = trigger_indexer_job(project)
             if success:
                 messages.success(request, f"Indexing job started for {project.name}.")
@@ -225,6 +228,7 @@ class ProjectActionView(LoginRequiredMixin, View):
             stop_indexer_job(project)  # Try to clean up any lingering jobs
             project.status = 'pending'
             project.save()
+            reset_project_progress(project)
             messages.success(request, f"Project '{project.name}' has been reset. You can now edit settings and run it again.")
             return redirect('project_list')
         elif action == 'enable':

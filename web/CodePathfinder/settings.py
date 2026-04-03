@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'chat',  # LibreChat integration
     'skills',  # AI agent skills system
     'memories',  # AI knowledge base (memories)
-    'documents',  # User documents with GitHub sync
     'telemetry',  # OSS telemetry client (counters + heartbeat)
     'django.contrib.humanize',
 ]
@@ -153,9 +152,12 @@ SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript to read CSRF cookie if needed
+CSRF_COOKIE_PATH = '/'
 SESSION_COOKIE_NAME = 'cpf_sessionid'
 CSRF_COOKIE_NAME = 'cpf_csrftoken'
 CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
 USE_X_FORWARDED_HOST = True
 USE_X_FORWARDED_PORT = True
 
@@ -237,8 +239,8 @@ SOCIALACCOUNT_AUTO_SIGNUP = True
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
-    'https://<YOUR_DOMAIN>',
-    'https://www.<YOUR_DOMAIN>',
+    'https://codepathfinder.com',
+    'https://www.codepathfinder.com',
     'https://localhost:8443',
     'https://127.0.0.1:8443',
 ]
@@ -265,8 +267,8 @@ if IS_PRODUCTION:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     # Cross-subdomain session cookie so Django session is sent when LibreChat iframe redirects to /o/authorize/
-    SESSION_COOKIE_DOMAIN = '.<YOUR_DOMAIN>'
-    SESSION_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_DOMAIN = '.codepathfinder.com'
+    # Note: SESSION_COOKIE_SAMESITE is set to 'Lax' above for security (not 'None')
 
 OAUTH2_PROVIDER = {
     # OIDC support — CodePathfinder acts as identity provider for LibreChat

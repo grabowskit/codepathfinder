@@ -533,14 +533,8 @@
     {% if user.is_authenticated %}
     <!-- Page context for the chat side panel. Override this block in templates. -->
     {% block page_context %}{% endblock %}
-    <!-- Marked.js for markdown in side panel (only load if not already loaded by chat page) -->
-    <script>
-        if (typeof marked === 'undefined') {
-            var s = document.createElement('script');
-            s.src = '{% static "js/marked.umd.js" %}?v=3';
-            document.head.appendChild(s);
-        }
-    </script>
+    <!-- Marked.js for markdown rendering in side panel -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
     <!-- Embedded chat side panel -->
     {% include "chat/side_panel.html" with librechat_url=librechat_url %}
     {% endif %}

@@ -470,7 +470,7 @@ def trigger_indexer_job(project):
         # Define the Job
         # Note: These values should ideally come from settings or a ConfigMap
         namespace = "codepathfinder"
-        image_name = "<YOUR_REGISTRY>/codepathfinder/indexer:latest"
+        image_name = "us-central1-docker.pkg.dev/wired-sound-479919-k8/codepathfinder/indexer:latest"
         
         # Delete any existing jobs for this project to avoid conflicts
         try:

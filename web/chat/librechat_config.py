@@ -62,6 +62,10 @@ def load_models() -> list[dict[str, Any]]:
         if not provider:
             logger.debug("Skipping model %s — unknown endpoint %s", spec.get("name"), endpoint)
             continue
+            
+        if provider == PROVIDER_OPENAI:
+            logger.debug("Skipping OpenAI model %s per configuration", spec.get("name"))
+            continue
 
         models.append({
             "id": spec.get("name") or model_id,

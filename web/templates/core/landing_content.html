@@ -1,0 +1,696 @@
+{% load static %}
+<div class="landing-page">
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="container">
+            <div class="landing-nav-content">
+                <a href="{% url 'home' %}" class="landing-logo">
+                    <img src="{% static 'img/logo-icon-light.png' %}" alt="CodePathfinder" class="landing-logo-img">
+                    <span class="landing-logo-text">CodePathfinder</span>
+                </a>
+                <div class="landing-nav-links">
+                    <a href="#features" class="landing-nav-link">Features</a>
+                    <a href="#use-cases" class="landing-nav-link">Use Cases</a>
+                    <a href="#integration" class="landing-nav-link">Integration</a>
+                    <a href="{% url 'documentation' %}" class="landing-nav-link">Docs</a>
+                </div>
+                <div class="landing-nav-cta">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'project_list' %}" class="btn btn-primary">Go to Dashboard</a>
+                    {% else %}
+                    <a href="{% url 'account_login' %}" class="btn btn-primary">Sign In</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="hero-badge-dot"></span>
+                        🚀 Private Beta — AI-Powered Code Intelligence
+                    </div>
+                    <h1 class="hero-title">
+                        Unlock the <span class="highlight">context</span> in your code for AI agents
+                    </h1>
+                    <p class="hero-subtitle">
+                        CodePathfinder indexes your codebases to enable semantic search and code structure analysis.
+                        Give your AI agents and teams the ability to understand complex systems instantly.
+                    </p>
+                    <div class="hero-actions">
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'project_list' %}" class="btn btn-primary btn-lg">View Projects</a>
+                        <a href="{% url 'documentation' %}" class="btn btn-secondary btn-lg">Documentation</a>
+                        {% else %}
+                        <a href="{% url 'beta_signup' %}" class="btn btn-primary btn-lg">Join Private Beta 🚀</a>
+                        {% endif %}
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">10K+</div>
+                            <div class="hero-stat-label">Documents Indexed</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">&lt;2s</div>
+                            <div class="hero-stat-label">Query Response</div>
+                        </div>
+                        <div class="hero-stat">
+                            <div class="hero-stat-value">15+</div>
+                            <div class="hero-stat-label">Languages Supported</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="hero-chat-window">
+                        <div class="hero-chat-header">
+                            <div class="hero-chat-dots">
+                                <span class="hero-visual-dot red"></span>
+                                <span class="hero-visual-dot yellow"></span>
+                                <span class="hero-visual-dot green"></span>
+                            </div>
+                            <div class="hero-chat-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                </svg>
+                                <span>AI Agent</span>
+                            </div>
+                            <div class="hero-chat-badge">MCP Connected</div>
+                        </div>
+                        <div class="hero-chat-body">
+                            <!-- User Message -->
+                            <div class="chat-message user-message animate-in">
+                                <div class="chat-avatar user-avatar-icon">You</div>
+                                <div class="chat-bubble user-bubble">
+                                    <span class="typing-text">Show me where the authentication flow is
+                                        implemented</span>
+                                </div>
+                            </div>
+                            <!-- AI Response -->
+                            <div class="chat-message ai-message animate-in-delayed">
+                                <div class="chat-avatar ai-avatar-icon">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                                    </svg>
+                                </div>
+                                <div class="chat-bubble ai-bubble">
+                                    <div class="ai-response-text">
+                                        I found the authentication flow in your codebase. Here's the main
+                                        implementation:
+                                    </div>
+                                    <div class="ai-code-result">
+                                        <div class="code-file-header">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                            </svg>
+                                            <span>src/auth/oauth.py</span>
+                                            <span class="code-line-num">lines 42-58</span>
+                                        </div>
+                                        <pre
+                                            class="code-content"><code><span class="code-keyword">def</span> <span class="code-function">authenticate_user</span>(credentials):
+    <span class="code-string">"""Validate user credentials and create session."""</span>
+    user = User.query.filter_by(
+        email=credentials.email
+    ).first()
+
+    <span class="code-keyword">if</span> user <span class="code-keyword">and</span> verify_password(
+        credentials.password,
+        user.password_hash
+    ):
+        <span class="code-keyword">return</span> create_session(user)
+
+    <span class="code-keyword">raise</span> AuthenticationError(<span class="code-string">"Invalid credentials"</span>)</code></pre>
+                                    </div>
+                                    <div class="ai-followup">
+                                        <span class="followup-label">Related files:</span>
+                                        <span class="followup-file">src/auth/session.py</span>
+                                        <span class="followup-file">src/models/user.py</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem-section" id="challenges">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">The Challenge</span>
+                <h2 class="section-title">Large Codebases Create Barriers</h2>
+                <p class="section-subtitle">
+                    As codebases grow, finding relevant code and understanding context becomes exponentially harder for
+                    both humans and AI.
+                </p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                    </div>
+                    <h3>Context Window Limits</h3>
+                    <p>AI agents struggle with large codebases. You can't fit everything into context, leading to
+                        incomplete understanding and hallucinations.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <h3>Slow Onboarding</h3>
+                    <p>New engineers spend months becoming productive. Finding where logic lives and understanding
+                        dependencies is a constant struggle.</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </div>
+                    <h3>Keyword Search Fails</h3>
+                    <p>Traditional search requires knowing exact terms. When you don't know what you're looking for,
+                        grep and IDE search fall short.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution-section">
+        <div class="container">
+            <div class="solution-grid">
+                <div class="solution-content">
+                    <h2>The <span class="highlight">Chain of Investigation</span></h2>
+                    <p>
+                        CodePathfinder transforms how you explore codebases. Start with natural language questions, dive
+                        deep into functions and classes, and synthesize complete understanding.
+                    </p>
+                    <div class="solution-features">
+                        <div class="solution-feature">
+                            <div class="solution-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </div>
+                            <div class="solution-feature-text">
+                                <h4>Semantic Search</h4>
+                                <p>Ask conceptual questions in natural language. Find code by meaning, not keywords.</p>
+                            </div>
+                        </div>
+                        <div class="solution-feature">
+                            <div class="solution-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                                </svg>
+                            </div>
+                            <div class="solution-feature-text">
+                                <h4>Code Structure Mapping</h4>
+                                <p>Automatically track functions, classes, and variables across your entire codebase.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="solution-feature">
+                            <div class="solution-feature-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                                </svg>
+                            </div>
+                            <div class="solution-feature-text">
+                                <h4>Usage Analysis</h4>
+                                <p>Find all references, call sites, and dependencies for any function or class in your
+                                    code.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="solution-visual">
+                    <div class="solution-card">
+                        <div class="solution-card-header">
+                            <span class="solution-card-title">Investigation Workflow</span>
+                            <span class="solution-card-badge">AI-Powered</span>
+                        </div>
+                        <div class="solution-card-body">
+                            <div class="solution-step">
+                                <div class="solution-step-num">1</div>
+                                <div class="solution-step-content">
+                                    <h5>Initial Discovery</h5>
+                                    <p>Perform broad semantic searches to find starting points</p>
+                                    <span class="solution-step-tag">code_search</span>
+                                </div>
+                            </div>
+                            <div class="solution-step">
+                                <div class="solution-step-num">2</div>
+                                <div class="solution-step-content">
+                                    <h5>Deep Analysis</h5>
+                                    <p>Analyze code, find usages, and trace dependencies</p>
+                                    <span class="solution-step-tag">find_usages</span>
+                                </div>
+                            </div>
+                            <div class="solution-step">
+                                <div class="solution-step-num">3</div>
+                                <div class="solution-step-content">
+                                    <h5>Synthesis</h5>
+                                    <p>Combine findings into comprehensive understanding</p>
+                                    <span class="solution-step-tag">complete context</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Capabilities</span>
+                <h2 class="section-title">Enterprise-Grade Code Intelligence</h2>
+                <p class="section-subtitle">
+                    A comprehensive toolkit for understanding, navigating, and documenting your codebase.
+                </p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </div>
+                    <h3>Semantic Code Search</h3>
+                    <p>Natural language queries that understand code intent. Ask "where is user authentication handled"
+                        instead of guessing file names.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                        </svg>
+                    </div>
+                    <h3>Code Syntax Analysis</h3>
+                    <p>Track definitions, implementations, and call sites across your codebase. Supports Python,
+                        TypeScript, JavaScript, Java, Go, C, C++, SQL, Markdown, YAML, JSON, Gradle, Handlebars, and
+                        more.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                    </div>
+                    <h3>File Reconstruction</h3>
+                    <p>Reconstruct complete files from indexed chunks. Access any file's content directly through the
+                        API.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <h3>Documentation Discovery</h3>
+                    <p>Identify undocumented code sections. Generate documentation recommendations based on code
+                        analysis.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                        </svg>
+                    </div>
+                    <h3>Multi-Project Support</h3>
+                    <p>Index and search across multiple repositories. Perfect for monorepos and microservice
+                        architectures.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10" />
+                            <line x1="18" y1="20" x2="18" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="16" />
+                        </svg>
+                    </div>
+                    <h3>Project Statistics</h3>
+                    <p>Get insights into your indexed projects including document counts, coverage, and storage
+                        statistics.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases Section -->
+    <section class="use-cases-section" id="use-cases">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-label">Use Cases</span>
+                <h2 class="section-title">Built for the Whole Organization</h2>
+                <p class="section-subtitle">
+                    Give everyone in your organization access to code intelligence through natural language. No IDE or
+                    technical setup required.
+                </p>
+            </div>
+            <div class="use-cases-grid">
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6" />
+                            <polyline points="8 6 2 12 8 18" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>Intelligent Onboarding</h3>
+                        <p>Generate personalized onboarding guides by analyzing codebase structure and identifying core
+                            modules for new developers.</p>
+                    </div>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>Code Review Automation</h3>
+                        <p>AI agents understand codebase patterns to automatically review PRs, suggest improvements, and
+                            flag deviations.</p>
+                    </div>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3" />
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>Technical Debt Analysis</h3>
+                        <p>Scan for duplicated logic, outdated patterns, and deprecated dependencies. Prioritize
+                            refactoring based on usage impact.</p>
+                    </div>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>Security Pattern Detection</h3>
+                        <p>Semantically understand security anti-patterns specific to your stack. Go beyond static
+                            analysis with contextual awareness.</p>
+                    </div>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="16" y1="13" x2="8" y2="13" />
+                            <line x1="16" y1="17" x2="8" y2="17" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>Product Manager Insights</h3>
+                        <p>Answer questions about features, estimate complexity, and understand what your codebase can
+                            do without reading code yourself.</p>
+                    </div>
+                </div>
+                <div class="use-case-card">
+                    <div class="use-case-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        </svg>
+                    </div>
+                    <div class="use-case-content">
+                        <h3>API Documentation</h3>
+                        <p>Technical writers can explore APIs, understand endpoints, and generate accurate documentation
+                            without developer hand-holding.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integration Section -->
+    <section class="integration-section" id="integration">
+        <div class="container">
+            <div class="integration-grid">
+                <div class="integration-content">
+                    <h2>Native MCP Integration</h2>
+                    <p>
+                        CodePathfinder is built from the ground up for AI agent integration through the Model Context
+                        Protocol. Connect your AI workflows directly to your codebase.
+                    </p>
+                    <div class="integration-features">
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>REST API Access</span>
+                        </div>
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>MCP Server Protocol</span>
+                        </div>
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Project-Based API Keys</span>
+                        </div>
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Claude & ChatGPT Compatible</span>
+                        </div>
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Vector Search Engine</span>
+                        </div>
+                        <div class="integration-feature">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span>Multi-Language Support</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="integration-visual">
+                    <div class="integration-diagram">
+                        <!-- AI Agent Node -->
+                        <div class="diagram-node diagram-node-ai">
+                            <div class="diagram-node-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                </svg>
+                            </div>
+                            <div class="diagram-node-label">AI Agent</div>
+                            <div class="diagram-node-sub">Claude, ChatGPT, Custom</div>
+                        </div>
+
+                        <!-- Arrow 1 -->
+                        <div class="diagram-arrow">
+                            <div class="diagram-arrow-line"></div>
+                            <div class="diagram-arrow-label">MCP Protocol</div>
+                            <svg class="diagram-arrow-head" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 12l14 0M13 5l7 7-7 7" />
+                            </svg>
+                        </div>
+
+                        <!-- CodePathfinder Node -->
+                        <div class="diagram-node diagram-node-cpf">
+                            <div class="diagram-node-icon diagram-node-icon-logo">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                                </svg>
+                            </div>
+                            <div class="diagram-node-label">CodePathfinder</div>
+                            <div class="diagram-node-sub">MCP Server + Search</div>
+                        </div>
+
+                        <!-- Arrow 2 -->
+                        <div class="diagram-arrow">
+                            <div class="diagram-arrow-line"></div>
+                            <div class="diagram-arrow-label">Index & Query</div>
+                            <svg class="diagram-arrow-head" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M5 12l14 0M13 5l7 7-7 7" />
+                            </svg>
+                        </div>
+
+                        <!-- GitHub Node -->
+                        <div class="diagram-node diagram-node-github">
+                            <div class="diagram-node-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+                                </svg>
+                            </div>
+                            <div class="diagram-node-label">GitHub</div>
+                            <div class="diagram-node-sub">Your Repositories</div>
+                        </div>
+
+                        <!-- Data flow indicators -->
+                        <div class="diagram-flow-indicator">
+                            <span class="flow-dot"></span>
+                            <span class="flow-dot"></span>
+                            <span class="flow-dot"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to unlock your codebase?</h2>
+                <p>
+                    Join our Private Beta and be among the first to experience AI-powered code intelligence.
+                </p>
+
+                <!-- Video Overview -->
+                <div class="cta-video-container" style="margin: 2.5rem auto; max-width: 800px;">
+                    <a href="https://www.youtube.com/watch?v=5gYaEsZvZ4A" target="_blank" rel="noopener noreferrer"
+                        style="display: block; position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                        onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 12px 48px rgba(0, 0, 0, 0.4)';"
+                        onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 8px 32px rgba(0, 0, 0, 0.3)';">
+                        <img src="{% static 'img/video-thumbnail.png' %}" alt="CodePathfinder Overview Video"
+                            style="width: 100%; display: block;">
+                        <!-- Play Button Overlay -->
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                    width: 80px; height: 80px; background: rgba(255, 255, 255, 0.9); 
+                                    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                fill="#FF0000" style="margin-left: 4px;">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </div>
+                    </a>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem; text-align: center;">
+                        🎬 Watch a quick overview of CodePathfinder
+                    </p>
+                </div>
+
+                <div class="cta-actions">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'project_list' %}" class="btn btn-primary btn-lg">Go to Dashboard</a>
+                    <a href="{% url 'documentation' %}" class="btn btn-secondary btn-lg">View Documentation</a>
+                    {% else %}
+                    <a href="{% url 'beta_signup' %}" class="btn btn-primary btn-lg">Request Early Access 🚀</a>
+                    <a href="{% url 'account_login' %}" class="btn btn-secondary btn-lg">Sign In</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+</div>
+
+<script>
+    // Navigation scroll effect
+    window.addEventListener('scroll', function () {
+        const nav = document.querySelector('.landing-nav');
+        if (window.scrollY > 50) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+</script>

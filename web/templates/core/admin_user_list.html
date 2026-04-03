@@ -75,7 +75,6 @@
                                 data-user-date-joined="{{ user_obj.date_joined|date:'c' }}"
                                 data-user-last-login="{% if user_obj.last_login %}{{ user_obj.last_login|date:'c' }}{% endif %}"
                                 data-user-github-username="{{ user_obj.github_settings.github_username }}"
-                                data-user-favorite-project="{% if user_obj.favorite_chat_project %}{{ user_obj.favorite_chat_project.name }}{% endif %}"
                                 data-user-is-superuser="{{ user_obj.is_superuser }}"
                                 data-user-is-active="{{ user_obj.is_active }}"
                                 onclick="openUserInfoModal(this)" title="View User Details">

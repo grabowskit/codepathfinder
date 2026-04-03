@@ -52,7 +52,7 @@ spec:
       - name: artifact-registry-key
       containers:
       - name: web
-        image: <YOUR_REGISTRY>/codepathfinder/web:latest
+        image: us-central1-docker.pkg.dev/wired-sound-479919-k8/codepathfinder/web:v1.7.2-csrf-httponly
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
