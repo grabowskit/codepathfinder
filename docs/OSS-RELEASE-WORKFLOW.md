@@ -73,6 +73,15 @@ After cherry-picking, grep for the following patterns and replace with the
 - `web/CodePathfinder/settings.py` — `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`,
   `SESSION_COOKIE_DOMAIN`, `DEFAULT_FROM_EMAIL`
 
+**Files that should NEVER be in OSS:**
+
+- `docs/cpf-dev-memory.md` — private development memory with production details
+- `chat-config/librechat.yaml` and `chat-config/.env` — private LLM configs
+- `kubernetes/librechat/librechat-configmap.private.yaml` — private K8s configs
+- `kubernetes/mcp-servers.yaml` — private MCP server configs
+- `mcp-servers/` directory — private MCP server implementations
+- Any files matching `*secret*`, `*key*.json`, or `*.pem`
+
 ### OSS Telemetry split (two-commit rule)
 
 The OSS telemetry feature is split across two commits on `main`:

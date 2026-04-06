@@ -96,3 +96,6 @@ mcp-servers/
 
 # Gemini artifacts (optional - remove if you want to track these)
 .gemini/
+
+# Private development memory (not for OSS)
+docs/cpf-dev-memory.md
