@@ -838,7 +838,21 @@ function escapeHtml(s) {
 
 function renderMarkdown(text) {
     if (typeof marked !== 'undefined') {
-        try { return marked.parse(text, { breaks: true, gfm: true }); } catch(e) {}
+        try {
+            // marked.js v11+ uses marked.parse()
+            if (typeof marked.parse === 'function') {
+                return marked.parse(text, { breaks: true, gfm: true });
+            }
+            // Fallback for older versions that use marked() directly
+            if (typeof marked === 'function') {
+                return marked(text, { breaks: true, gfm: true });
+            }
+            console.warn('[CPF] marked is defined but parse function not found', typeof marked, Object.keys(marked || {}));
+        } catch(e) {
+            console.error('[CPF] marked.parse error:', e);
+        }
+    } else {
+        console.warn('[CPF] marked library not loaded - using plain text fallback');
     }
     return escapeHtml(text).replace(/\n/g, '<br>');
 }

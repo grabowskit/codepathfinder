@@ -14,6 +14,8 @@
         rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/design-tokens.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=18">
+    <!-- Marked.js for markdown rendering in side panel -->
+    <script src="{% static 'js/marked.min.js' %}"></script>
     <!-- Prevent theme flash: Apply theme BEFORE page renders -->
     <script>
         (function() {
@@ -533,8 +535,6 @@
     {% if user.is_authenticated %}
     <!-- Page context for the chat side panel. Override this block in templates. -->
     {% block page_context %}{% endblock %}
-    <!-- Marked.js for markdown rendering in side panel -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
     <!-- Embedded chat side panel -->
     {% include "chat/side_panel.html" with librechat_url=librechat_url %}
     {% endif %}
