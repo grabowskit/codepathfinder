@@ -1,0 +1,758 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Personal Context Interview — CodePathfinder{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+
+    <!-- ── Left: Progress Sidebar ── -->
+    <div class="wizard-progress">
+        <div class="wizard-progress-sticky">
+
+            <div class="wizard-progress-header">
+                <div class="wizard-progress-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                </div>
+                <div class="wizard-progress-title">Personal Context</div>
+                <div class="wizard-progress-subtitle">Build your AI memory portfolio</div>
+            </div>
+
+            <ol class="wizard-steps-list">
+                <li class="wizard-step-item active" data-step="intro">
+                    <span class="wizard-step-number interview-step-dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+                    </span>
+                    <span class="wizard-step-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="wizard-step-label">Introduction</span>
+                </li>
+                {% for step in steps %}
+                <li class="wizard-step-item" data-step="{{ step.key }}">
+                    <span class="wizard-step-number">{{ forloop.counter }}</span>
+                    <span class="wizard-step-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="wizard-step-label">{{ step.title }}</span>
+                </li>
+                {% endfor %}
+                <li class="wizard-step-item" data-step="review">
+                    <span class="wizard-step-number interview-step-dot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="wizard-step-check">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    <span class="wizard-step-label">Review &amp; Save</span>
+                </li>
+            </ol>
+
+            <div style="margin-top: 1rem; padding-top: 0.875rem; border-top: 1px solid var(--border-color);">
+                <button onclick="interviewReset()" class="interview-reset-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+                    </svg>
+                    Clear &amp; Start Over
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Right: Step Content ── -->
+    <div class="wizard-content">
+
+        <!-- ── Step: Introduction ──────────────────────────────────── -->
+        <div class="wizard-panel" id="step-intro">
+            <h2 class="wizard-panel-title">Build Your Personal Context Portfolio</h2>
+            <p class="wizard-panel-desc">
+                This interview captures who you are, how you work, and what you care about — creating
+                a set of searchable memories that any AI can use without you having to re-explain yourself every time.
+            </p>
+
+            <div class="wizard-detection-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="detection-card detection-ok">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="detection-label">~15 minutes</div>
+                    <div class="detection-badge badge-ok">Estimated time</div>
+                </div>
+                <div class="detection-card detection-ok">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+                    </div>
+                    <div class="detection-label">10 memories</div>
+                    <div class="detection-badge badge-ok">One per category</div>
+                </div>
+                <div class="detection-card detection-ok">
+                    <div class="detection-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    </div>
+                    <div class="detection-label">Private to you</div>
+                    <div class="detection-badge badge-ok">User scope only</div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4 class="settings-section-title" style="margin-bottom: 0.875rem;">What you'll cover</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1.5rem;">
+                    {% for step in steps %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding: 0.2rem 0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary); flex-shrink: 0;"><polyline points="20 6 9 17 4 12"/></svg>
+                        {{ step.title }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0;">
+                Progress saves as you go — navigate away and return to pick up where you left off.
+                Skip any section, or re-run the interview at any time to refresh your memories.
+            </p>
+
+            <div class="wizard-actions" style="border-top: none; padding-top: 1rem; justify-content: flex-start; margin-top: 1.25rem;">
+                <button onclick="interviewNext()" class="btn btn-primary">
+                    Start Interview
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+                <a href="{% url 'memory_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+
+        <!-- ── Category Steps ──────────────────────────────────────── -->
+        {% for step in steps %}
+        <div class="wizard-panel" id="step-{{ step.key }}" style="display: none;">
+
+            <div class="interview-step-counter">
+                Step {{ forloop.counter }} of {{ steps|length }}
+            </div>
+            <h2 class="wizard-panel-title">{{ step.title }}</h2>
+            <p class="wizard-panel-desc">{{ step.description }}</p>
+
+            <div class="settings-section">
+                <h4 class="settings-section-title" style="margin-bottom: 1.25rem;">
+                    Answer below — write as much or as little as you like
+                </h4>
+                <div class="wizard-form">
+                    {% for label, question in step.questions %}
+                    <div class="form-group{% if not forloop.last %} interview-q-sep{% endif %}">
+                        <label class="form-label">{{ label }}</label>
+                        <p class="interview-question-prompt">{{ question }}</p>
+                        <textarea
+                            class="form-control interview-textarea"
+                            data-step-q="{{ step.key }}"
+                            data-q-index="{{ forloop.counter0 }}"
+                            data-q-label="{{ label }}"
+                            data-q-text="{{ question }}"
+                            rows="3"
+                            placeholder="Your answer…"
+                        ></textarea>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="wizard-actions">
+                <button onclick="interviewPrev()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back
+                </button>
+                <button onclick="interviewSkip('{{ step.key }}')" class="btn btn-secondary">Skip</button>
+                <button onclick="interviewNext('{{ step.key }}')" class="btn btn-primary">
+                    {% if not forloop.last %}Continue{% else %}Review Answers{% endif %}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- ── Review & Save ───────────────────────────────────────── -->
+        <div class="wizard-panel" id="step-review" style="display: none;">
+            <h2 class="wizard-panel-title">Review &amp; Save</h2>
+            <p class="wizard-panel-desc">
+                Each category with answers will be saved as a personal context memory tagged
+                <code style="font-family: var(--font-mono); font-size: 0.85em; padding: 0.1em 0.35em; background: var(--bg-tertiary); border-radius: 4px;">personal-context</code>.
+                Any existing personal context memories will be replaced.
+                Click a row to go back and edit it.
+            </p>
+
+            <div class="wizard-summary" id="interviewSummary">
+                <!-- Populated by JS -->
+            </div>
+
+            <form id="interviewForm" method="post" action="{% url 'memory_interview' %}">
+                {% csrf_token %}
+                {% for step in steps %}
+                <input type="hidden" name="response_{{ step.key }}" id="hidden_{{ step.key }}" value="">
+                {% endfor %}
+            </form>
+
+            <div class="wizard-actions">
+                <button onclick="interviewPrev()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back
+                </button>
+                <button onclick="interviewSubmit()" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v13a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Memories
+                </button>
+            </div>
+        </div>
+
+    </div><!-- end wizard-content -->
+</div><!-- end wizard-container -->
+
+<style>
+/* ── Wizard Layout (matches setup_wizard.html exactly) ── */
+.wizard-container {
+    display: flex;
+    max-width: 1060px;
+    margin: 0 auto;
+    gap: 0;
+    min-height: calc(100vh - var(--topbar-height) - 3rem);
+}
+
+.wizard-progress {
+    width: 220px;
+    min-width: 220px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-color);
+    border-radius: var(--radius-xl) 0 0 var(--radius-xl);
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    max-height: calc(100vh - var(--topbar-height, 60px));
+    overflow-y: auto;
+}
+
+body.light .wizard-progress {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.wizard-progress-sticky {
+    padding: 1.5rem 1.125rem;
+}
+
+.wizard-progress-header {
+    text-align: center;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.wizard-progress-icon { color: var(--primary); margin-bottom: 0.4rem; }
+.wizard-progress-title { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+.wizard-progress-subtitle { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem; }
+
+/* Steps List */
+.wizard-steps-list { list-style: none; padding: 0; margin: 0; position: relative; }
+
+.wizard-step-item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.45rem 0.625rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    margin-bottom: 0.125rem;
+    color: var(--text-secondary);
+}
+
+.wizard-step-item:hover { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+body.light .wizard-step-item:hover { background: rgba(0,0,0,0.03); }
+
+.wizard-step-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 1.2rem;
+    top: 2rem;
+    width: 2px;
+    height: 0.6rem;
+    background: var(--border-color);
+}
+
+.wizard-step-number {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; font-weight: 600;
+    background: var(--bg-tertiary); color: var(--text-secondary);
+    flex-shrink: 0; transition: all 0.2s ease;
+}
+body.light .wizard-step-number { background: #e2e8f0; }
+
+.interview-step-dot { font-size: 0; }  /* icon-sized number */
+
+.wizard-step-check {
+    display: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.wizard-step-label { font-size: 0.8rem; font-weight: 500; line-height: 1.2; }
+
+/* Active */
+.wizard-step-item.active { color: var(--primary); }
+.wizard-step-item.active .wizard-step-number { background: var(--primary); color: #fff; }
+
+/* Completed */
+.wizard-step-item.completed .wizard-step-number { display: none; }
+.wizard-step-item.completed .wizard-step-check { display: flex; background: var(--green-600, #16a34a); color: #fff; }
+.wizard-step-item.completed { color: var(--text-primary); }
+
+/* Skipped */
+.wizard-step-item.skipped { color: var(--text-muted); }
+.wizard-step-item.skipped .wizard-step-number {
+    background: transparent;
+    border: 2px dashed var(--border-color);
+    color: var(--text-muted);
+}
+.wizard-step-item.skipped .wizard-step-label { text-decoration: line-through; opacity: 0.6; }
+
+/* Content Area */
+.wizard-content { flex: 1; padding: 1.75rem 2rem; min-width: 0; }
+
+.wizard-panel { animation: wizardFadeIn 0.25s ease; }
+
+@keyframes wizardFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.wizard-panel-title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.wizard-panel-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+}
+
+/* Detection Grid */
+.wizard-detection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.detection-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    display: flex; flex-direction: column; gap: 0.4rem;
+}
+body.light .detection-card { background: #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+.detection-card.detection-ok   { border-color: rgba(22, 163, 74, 0.3); }
+.detection-card.detection-pending { border-color: rgba(245, 158, 11, 0.3); }
+.detection-icon { color: var(--text-secondary); }
+.detection-card.detection-ok .detection-icon   { color: var(--green-600, #16a34a); }
+.detection-card.detection-pending .detection-icon { color: var(--amber-500, #f59e0b); }
+.detection-label { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+.detection-badge {
+    font-size: 0.7rem; font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-full, 9999px);
+    display: inline-block; width: fit-content;
+}
+.detection-badge.badge-ok      { background: rgba(22,163,74,0.1); color: var(--green-600, #16a34a); }
+.detection-badge.badge-pending { background: rgba(245,158,11,0.1); color: var(--amber-500, #f59e0b); }
+body.light .detection-badge.badge-ok { background: rgba(22,163,74,0.08); }
+
+/* Settings section */
+.wizard-panel .settings-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0;
+    border: 1px solid var(--border-color);
+}
+body.light .wizard-panel .settings-section { background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+
+.wizard-panel .settings-section-title {
+    margin: 0;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+/* Form within wizard */
+.wizard-form { margin-bottom: 0; }
+
+.wizard-form .form-group { margin-bottom: 0; }
+
+.wizard-form .form-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+/* Action Bar */
+.wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Summary */
+.wizard-summary { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0; }
+
+.wizard-summary-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.875rem 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+body.light .wizard-summary-item { background: #ffffff; }
+.wizard-summary-item:hover { border-color: var(--primary); }
+
+.wizard-summary-left { display: flex; align-items: center; gap: 0.75rem; }
+
+.wizard-summary-icon {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.wizard-summary-icon.icon-completed { background: rgba(22,163,74,0.1); color: var(--green-600, #16a34a); }
+.wizard-summary-icon.icon-skipped   { background: rgba(245,158,11,0.1); color: var(--amber-500, #f59e0b); }
+.wizard-summary-icon.icon-pending   { background: var(--bg-tertiary); color: var(--text-muted); }
+
+.wizard-summary-name { font-size: 0.875rem; font-weight: 500; color: var(--text-primary); }
+
+.wizard-summary-badge {
+    font-size: 0.75rem; font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full, 9999px);
+}
+.wizard-summary-badge.summary-completed { background: rgba(22,163,74,0.1); color: var(--green-600, #16a34a); }
+.wizard-summary-badge.summary-skipped   { background: rgba(245,158,11,0.1); color: var(--amber-500, #f59e0b); }
+.wizard-summary-badge.summary-pending   { background: var(--bg-tertiary); color: var(--text-muted); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .wizard-container { flex-direction: column; }
+    .wizard-progress {
+        width: 100%; min-width: unset;
+        border-radius: var(--radius-xl);
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        position: static;
+        max-height: none;
+    }
+    .wizard-steps-list { display: flex; overflow-x: auto; gap: 0; }
+    .wizard-step-item { flex-direction: column; text-align: center; min-width: 70px; padding: 0.4rem; }
+    .wizard-step-item:not(:last-child)::after { display: none; }
+    .wizard-detection-grid { grid-template-columns: 1fr; }
+    .wizard-content { padding: 1rem; }
+}
+
+/* ── Interview-specific styles ── */
+.interview-step-counter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--primary);
+    margin-bottom: 0.375rem;
+    opacity: 0.85;
+}
+
+.interview-question-prompt {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.interview-textarea {
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.6;
+    font-size: 0.9rem;
+    min-height: 72px;
+}
+
+.interview-q-sep {
+    padding-bottom: 1.125rem;
+    margin-bottom: 1.125rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.interview-reset-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 0.78rem; color: var(--text-muted);
+    display: flex; align-items: center; gap: 0.375rem;
+    padding: 0.25rem 0;
+    transition: color 0.2s ease;
+    font-family: inherit;
+}
+.interview-reset-btn:hover { color: var(--text-secondary); }
+</style>
+
+<script>
+(function() {
+    var STEPS = ['intro', {% for step in steps %}'{{ step.key }}', {% endfor %}'review'];
+    var STEP_LABELS = {
+        'intro': 'Introduction',
+        {% for step in steps %}'{{ step.key }}': '{{ step.title|escapejs }}',
+        {% endfor %}
+        'review': 'Review & Save'
+    };
+    var currentStep = 0;
+    // stepData: { key: { q0: "text", q1: "text", ... } }
+    var stepData   = {};
+    // stepStatus: { key: 'completed' | 'skipped' | null }
+    var stepStatus = {};
+
+    var SK = 'interviewWizardStep';
+    var SD = 'interviewWizardData';
+    var SS = 'interviewWizardStatus';
+
+    /* ── Persistence ── */
+    function saveSession() {
+        sessionStorage.setItem(SK, currentStep);
+        sessionStorage.setItem(SD, JSON.stringify(stepData));
+        sessionStorage.setItem(SS, JSON.stringify(stepStatus));
+    }
+
+    /* ── Capture textarea values for the current step ── */
+    function captureStep() {
+        var name = STEPS[currentStep];
+        if (name === 'intro' || name === 'review') return;
+        var answers = {};
+        document.querySelectorAll('[data-step-q="' + name + '"]').forEach(function(ta) {
+            answers['q' + ta.getAttribute('data-q-index')] = ta.value;
+        });
+        stepData[name] = answers;
+    }
+
+    /* ── Restore textarea values for the given step name ── */
+    function restoreStep(name) {
+        if (name === 'intro' || name === 'review') return;
+        var answers = stepData[name] || {};
+        document.querySelectorAll('[data-step-q="' + name + '"]').forEach(function(ta) {
+            ta.value = answers['q' + ta.getAttribute('data-q-index')] || '';
+        });
+    }
+
+    /* ── Helpers ── */
+    function hasContent(key) {
+        var d = stepData[key];
+        if (!d || typeof d !== 'object') return false;
+        return Object.values(d).some(function(v) { return v && v.trim().length > 0; });
+    }
+
+    function charCount(key) {
+        var d = stepData[key] || {};
+        return Object.values(d).reduce(function(s, v) { return s + (v ? v.trim().length : 0); }, 0);
+    }
+
+    /* ── Build markdown content for a step ── */
+    function buildMemoryContent(key) {
+        var title = STEP_LABELS[key] || key;
+        var qEls  = document.querySelectorAll('[data-step-q="' + key + '"]');
+        var d     = stepData[key] || {};
+        var lines = ['# ' + title, ''];
+        var hasAny = false;
+        qEls.forEach(function(el) {
+            var idx    = el.getAttribute('data-q-index');
+            var label  = el.getAttribute('data-q-label') || '';
+            var qtext  = el.getAttribute('data-q-text')  || '';
+            var answer = (d['q' + idx] || '').trim();
+            if (!answer) return;
+            hasAny = true;
+            lines.push('## ' + label);
+            lines.push(qtext);
+            lines.push('');
+            lines.push(answer);
+            lines.push('');
+        });
+        return hasAny ? lines.join('\n') : '';
+    }
+
+    /* ── Show a step by index ── */
+    function showStep(index) {
+        if (index < 0 || index >= STEPS.length) return;
+        var targetName = STEPS[index];
+
+        STEPS.forEach(function(name, i) {
+            var panel = document.getElementById('step-' + name);
+            if (panel) panel.style.display = (i === index) ? 'block' : 'none';
+
+            var li = document.querySelector('.wizard-step-item[data-step="' + name + '"]');
+            if (!li) return;
+            li.classList.remove('active', 'completed', 'skipped');
+            if (i === index) {
+                li.classList.add('active');
+            } else if (stepStatus[name] === 'completed') {
+                li.classList.add('completed');
+            } else if (stepStatus[name] === 'skipped') {
+                li.classList.add('skipped');
+            }
+        });
+
+        currentStep = index;
+        restoreStep(targetName);
+        saveSession();
+
+        if (targetName === 'review') buildSummary();
+
+        // Scroll content to top on step change
+        var content = document.querySelector('.wizard-content');
+        if (content) content.scrollTop = 0;
+        window.scrollTo(0, 0);
+    }
+
+    /* ── Build review summary ── */
+    function buildSummary() {
+        var container = document.getElementById('interviewSummary');
+        if (!container) return;
+        var html = '';
+        var contentSteps = STEPS.slice(1, -1); // exclude intro and review
+        contentSteps.forEach(function(name, i) {
+            var chars   = charCount(name);
+            var skipped = stepStatus[name] === 'skipped';
+            var status  = chars > 0 ? 'completed' : (skipped ? 'skipped' : 'pending');
+            var iconClass, iconSvg, badgeClass, badgeText;
+
+            if (status === 'completed') {
+                iconClass = 'icon-completed';
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+                badgeClass = 'summary-completed';
+                badgeText  = chars + ' chars';
+            } else if (status === 'skipped') {
+                iconClass = 'icon-skipped';
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                badgeClass = 'summary-skipped';
+                badgeText  = 'Skipped';
+            } else {
+                iconClass = 'icon-pending';
+                iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>';
+                badgeClass = 'summary-pending';
+                badgeText  = 'Empty';
+            }
+
+            // Step index for navigation: content step i corresponds to overall STEPS index i+1
+            var stepIndex = i + 1;
+            html += '<div class="wizard-summary-item" onclick="goToStep(' + stepIndex + ')">' +
+                '<div class="wizard-summary-left">' +
+                '<div class="wizard-summary-icon ' + iconClass + '">' + iconSvg + '</div>' +
+                '<span class="wizard-summary-name">' + escHtml(STEP_LABELS[name]) + '</span>' +
+                '</div>' +
+                '<span class="wizard-summary-badge ' + badgeClass + '">' + escHtml(badgeText) + '</span>' +
+                '</div>';
+        });
+        container.innerHTML = html;
+    }
+
+    function escHtml(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(String(str)));
+        return d.innerHTML;
+    }
+
+    /* ── Public navigation API ── */
+    window.interviewNext = function(stepKey) {
+        captureStep();
+        if (stepKey) {
+            stepStatus[stepKey] = hasContent(stepKey) ? 'completed' : 'pending';
+        }
+        if (currentStep < STEPS.length - 1) showStep(currentStep + 1);
+    };
+
+    window.interviewPrev = function() {
+        captureStep();
+        if (currentStep > 0) showStep(currentStep - 1);
+    };
+
+    window.interviewSkip = function(stepKey) {
+        if (stepKey) {
+            // Clear any existing answers for this step
+            document.querySelectorAll('[data-step-q="' + stepKey + '"]').forEach(function(ta) { ta.value = ''; });
+            stepData[stepKey]   = {};
+            stepStatus[stepKey] = 'skipped';
+        }
+        if (currentStep < STEPS.length - 1) showStep(currentStep + 1);
+    };
+
+    window.goToStep = function(index) {
+        captureStep();
+        showStep(index);
+    };
+
+    window.interviewReset = function() {
+        if (!confirm('Clear all your answers and start over?')) return;
+        sessionStorage.removeItem(SK);
+        sessionStorage.removeItem(SD);
+        sessionStorage.removeItem(SS);
+        stepData   = {};
+        stepStatus = {};
+        document.querySelectorAll('.interview-textarea').forEach(function(ta) { ta.value = ''; });
+        showStep(0);
+    };
+
+    window.interviewSubmit = function() {
+        captureStep();
+        // Build markdown for each content step and populate hidden inputs
+        STEPS.slice(1, -1).forEach(function(key) {
+            var content = buildMemoryContent(key);
+            var hidden  = document.getElementById('hidden_' + key);
+            if (hidden) hidden.value = content;
+        });
+        // Clear session so a fresh interview starts next time
+        sessionStorage.removeItem(SK);
+        sessionStorage.removeItem(SD);
+        sessionStorage.removeItem(SS);
+        document.getElementById('interviewForm').submit();
+    };
+
+    /* ── Sidebar click navigation ── */
+    document.querySelectorAll('.wizard-step-item').forEach(function(li, i) {
+        li.addEventListener('click', function() {
+            captureStep();
+            showStep(i);
+        });
+    });
+
+    /* ── Restore from session on load ── */
+    var savedStep = parseInt(sessionStorage.getItem(SK) || '0', 10);
+    try { stepData   = JSON.parse(sessionStorage.getItem(SD) || '{}'); } catch(e) {}
+    try { stepStatus = JSON.parse(sessionStorage.getItem(SS) || '{}'); } catch(e) {}
+    showStep(isNaN(savedStep) ? 0 : Math.min(savedStep, STEPS.length - 1));
+})();
+</script>
+{% endblock %}
