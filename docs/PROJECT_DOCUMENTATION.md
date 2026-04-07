@@ -42,8 +42,9 @@ CodePathfinder enables developers to:
 
 - Semantic code search powered by Elasticsearch ELSER
 - Multi-language support (TypeScript, JavaScript, Python, Java, C++, Go, Rust, etc.)
-- AI chat interface via LibreChat with multi-model support (GPT-5, Claude Sonnet 4)
-- MCP server with 21 tools (code search, GitHub, skills, jobs)
+- AI chat interface via LibreChat with multi-model support (AWS Bedrock Claude models)
+- MCP server with 29 tools (code search, GitHub, skills, memories, jobs, observability)
+- Persistent memory system with semantic search and auto-injection
 - GitHub repository integration with private repo support
 - Real-time job monitoring and management
 - User authentication (email + Google OAuth) with admin approval workflow
@@ -148,8 +149,8 @@ graph TB
 - `chat-config/librechat.yaml` — Model configuration, MCP server connection, model presets
 
 **LLM Models:**
-- OpenAI: GPT-5, GPT-5 Mini, GPT-5.2
-- Anthropic: Claude Sonnet 4, Claude 3.5 Haiku
+- AWS Bedrock: Claude Sonnet 4.6, Claude Opus 4.6, Claude Haiku 4.5
+- OpenRouter: Multi-provider access (100+ models)
 
 **MCP Connection:**
 - Local: `http://web:8000/mcp/` (via shared Docker network `cpf-librechat`)
@@ -352,7 +353,7 @@ Chat functionality is provided by LibreChat, embedded in the Django app at `/cha
 - Auth: Internal service secret shared between LibreChat and Django
 - LLM configuration lives in `chat-config/librechat.yaml`, not in the database
 
-### 4. MCP Server (21 Tools)
+### 4. MCP Server (29 Tools)
 
 The MCP server implements the **MCP 2025-06-18 Streamable HTTP** specification at `/mcp/`.
 
@@ -366,32 +367,44 @@ The MCP server implements the **MCP 2025-06-18 Streamable HTTP** specification a
 | `document_symbols` | List symbols that need documentation |
 | `size` | Get statistics about the code index |
 
-**GitHub Tools (7):**
+**GitHub Tools (2 consolidated tools, 7 actions):**
 | Tool | Description |
 |------|-------------|
-| `github_create_issue` | Create a GitHub issue |
-| `github_get_labels` | Get repository labels |
-| `github_add_comment` | Add a comment to an issue/PR |
-| `github_create_pull_request` | Create a pull request |
-| `github_create_branch` | Create a new branch |
-| `github_list_branches` | List repository branches |
-| `github_get_repo_info` | Get repository information |
+| `github_manage_issues` | Create issues, add comments, get labels (3 actions) |
+| `github_manage_code` | Get repo info, list branches, create branches, create PRs, get latest changes (5 actions) |
 
-**Skills Tools (6):**
+**Skills Tools (7):**
 | Tool | Description |
 |------|-------------|
 | `skills_list` | List available skills |
 | `skills_get` | Get a specific skill |
 | `skills_search` | Search for skills |
-| `skills_sync` | Sync skills from source |
-| `skills_import` | Import a skill |
-| `skills_activate` | Activate/deactivate a skill |
+| `skills_sync` | Sync skills from GitHub repository |
+| `skills_import` | Import a skill from SKILL.md |
+| `skills_activate` | Activate a skill for conversation |
+| `skills_discover` | Discover and import skills from external repos |
+
+**Memories Tools (7):**
+| Tool | Description |
+|------|-------------|
+| `memories_list` | List personal and organization memories |
+| `memories_get` | Get a memory by ID |
+| `memories_search` | Semantic search across memories |
+| `memories_create` | Create a new memory |
+| `memories_update` | Update an existing memory |
+| `memories_delete` | Soft-delete a memory |
+| `memories_import` | Import a markdown document as chunked RAG memory |
 
 **Job Management Tools (2):**
 | Tool | Description |
 |------|-------------|
-| `job_manage` | Start/stop/reset indexing jobs |
-| `job_status` | Get job status information |
+| `job_manage` | Start/stop/reset/create/update/delete indexing jobs |
+| `job_status` | Get job status, list projects, view logs and history |
+
+**Observability Tools (1):**
+| Tool | Description |
+|------|-------------|
+| `otel_configure_collection` | Configure OpenTelemetry collection for projects |
 
 **Authentication (in priority order):**
 1. `CPF_INTERNAL_SERVICE_SECRET` → superuser `__internal_service__` user (LibreChat)

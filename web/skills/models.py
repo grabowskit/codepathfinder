@@ -126,9 +126,27 @@ class Skill(models.Model):
     def __str__(self):
         return self.name
 
-    def increment_usage(self):
-        """Increment usage count atomically."""
-        Skill.objects.filter(pk=self.pk).update(usage_count=models.F('usage_count') + 1)
+    def increment_usage(self, user=None):
+        """
+        Increment usage count atomically for both aggregate and per-user tracking.
+
+        Args:
+            user: Django User instance (optional for backward compatibility)
+        """
+        from django.db.models import F
+
+        # Increment aggregate counter
+        Skill.objects.filter(pk=self.pk).update(usage_count=F('usage_count') + 1)
+
+        # Increment per-user counter if user provided
+        if user and user.is_authenticated:
+            usage, created = SkillUsage.objects.get_or_create(
+                user=user,
+                skill=self,
+                defaults={'usage_count': 1}
+            )
+            if not created:
+                SkillUsage.objects.filter(pk=usage.pk).update(usage_count=F('usage_count') + 1)
 
     def to_dict(self):
         """Convert skill to dictionary for API/MCP responses."""

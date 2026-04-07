@@ -31,7 +31,7 @@ A semantic code indexing, search, and AI-powered chat platform. Index GitHub rep
 - **Django Web App** — Project management, user auth, API keys, MCP server, job orchestration
 - **Ask CodePathfinder** — Embedded side panel (SSE streaming) on every page; shares model config with LibreChat
 - **LibreChat** — Full AI chat UI with conversation history, multi-model support, and MCP tools
-- **MCP Server** — 22+ tools via Model Context Protocol (code search, GitHub ops, skills, memories, jobs)
+- **MCP Server** — 29 tools via Model Context Protocol (code search, GitHub ops, skills, memories, jobs, OTel)
 - **Node.js Indexer** — Clones repos, parses code with Tree-sitter, indexes into Elasticsearch
 - **Elasticsearch** — Semantic search with ELSER (Elastic Learned Sparse Encoder)
 
@@ -96,14 +96,67 @@ Without HTTPS:
 
 > **Note**: New accounts are inactive by default. Log in as the superuser to activate them, or check `docker compose logs web` for the approval link.
 
-### LLM Providers
+### LLM Model Configuration
 
-`setup.sh` prompts for LLM API keys but they are **optional** — LibreChat starts without them. You can add keys later:
+CodePathfinder supports **15+ LLM providers** via LibreChat. The default setup uses:
 
-1. Edit `chat-config/.env` with your API key(s)
-2. `docker compose restart librechat`
+- **AWS Bedrock** (recommended): Claude Sonnet 4.6, Opus 4.6, Haiku 4.5
+- **OpenRouter** (optional): Multi-provider access through a single API
 
-Supported providers: OpenAI, Anthropic, Azure OpenAI, Google Gemini, AWS Bedrock.
+#### Supported Providers
+
+| Provider | Models | Documentation |
+|----------|--------|---------------|
+| **AWS Bedrock** ⭐ | Claude 4.6, Titan, Llama 3, Mistral | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/bedrock) |
+| **OpenRouter** ⭐ | 100+ models from multiple providers | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom) |
+| OpenAI | GPT-4o, GPT-4, o1-preview, o1-mini | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/openai) |
+| Anthropic | Claude 3.5 Sonnet, Claude 3 Opus/Haiku | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/anthropic) |
+| Google | Gemini Pro/Ultra, PaLM 2 | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/google) |
+| Azure OpenAI | GPT-4o, GPT-4 via Azure | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/azure_openai) |
+| Groq | Llama 3.1, Mixtral (ultra-fast) | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom) |
+| Mistral AI | Mistral Large/Medium/Small | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom) |
+| Ollama | Self-hosted local models | [Config Guide](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/ollama) |
+| Cohere, Perplexity, Together AI, Fireworks, HuggingFace, and more | Various | [Custom Endpoints](https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom) |
+
+⭐ = Pre-configured in default setup
+
+#### Quick Setup
+
+1. **Add API keys** to `chat-config/.env`:
+   ```bash
+   # AWS Bedrock (default)
+   AWS_ACCESS_KEY_ID=your_key
+   AWS_SECRET_ACCESS_KEY=your_secret
+   AWS_REGION=us-east-2
+   
+   # OpenRouter (optional)
+   OPENROUTER_API_KEY=sk-or-v1-...
+   
+   # OpenAI (optional)
+   OPENAI_API_KEY=sk-...
+   
+   # Anthropic (optional)
+   ANTHROPIC_API_KEY=sk-ant-...
+   ```
+
+2. **Configure models** in `chat-config/librechat.yaml`:
+   ```yaml
+   modelSpecs:
+     list:
+       - name: "my-model"
+         label: "My Model"
+         mcpServers: ["codepathfinder"]  # Gives model access to all 29 tools
+         preset:
+           endpoint: "bedrock"
+           model: "us.anthropic.claude-sonnet-4-6"
+   ```
+
+3. **Restart LibreChat**:
+   ```bash
+   docker compose restart librechat
+   ```
+
+See [LibreChat Configuration Docs](https://www.librechat.ai/docs/configuration/librechat_yaml) for complete setup guides and advanced options.
 
 See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for full setup details including manual configuration and troubleshooting.
 
@@ -116,19 +169,29 @@ See [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md) for full setup details including manu
 
 ### AI Chat (via LibreChat)
 - Chat with your codebase through an embedded LibreChat interface at `/chat/`
-- Multi-model support: OpenAI (GPT-4o, o1, etc.), Anthropic (Claude), Google (Gemini), AWS Bedrock, Azure, and more
+- Multi-model support: AWS Bedrock (Claude Sonnet 4.6, Opus 4.6, Haiku 4.5), OpenRouter (multi-provider)
 - All models have access to CodePathfinder MCP tools by default
 - Artifact sharing and conversation export
+- Skills integration for specialized AI agent behaviors
 
-### MCP Server (21 Tools)
+### Memory System
+- Personal and organization-wide knowledge storage
+- Semantic search with ELSER (Elasticsearch Learned Sparse Encoder)
+- Auto-injection based on conversation context and tags
+- Import full documents as chunked RAG memories
+- 7 MCP tools for programmatic access
+
+### MCP Server (29 Tools)
 The MCP server at `/mcp/` implements the MCP 2025-06-18 Streamable HTTP specification:
 
 | Category         | Tools |
 |------------------|-------|
 | **Code Search**  | `semantic_code_search`, `map_symbols_by_query`, `size`, `symbol_analysis`, `read_file_from_chunks`, `document_symbols` |
-| **GitHub**       | `github_create_issue`, `github_get_labels`, `github_add_comment`, `github_create_pull_request`, `github_create_branch`, `github_list_branches`, `github_get_repo_info` |
-| **Skills**       | `skills_list`, `skills_get`, `skills_search`, `skills_sync`, `skills_import`, `skills_activate` |
+| **GitHub**       | `github_manage_issues`, `github_manage_code` (7 actions: create issue, get labels, add comment, create PR, create branch, list branches, get repo info) |
+| **Skills**       | `skills_list`, `skills_get`, `skills_search`, `skills_sync`, `skills_import`, `skills_activate`, `skills_discover` |
+| **Memories**     | `memories_list`, `memories_get`, `memories_search`, `memories_create`, `memories_update`, `memories_delete`, `memories_import` |
 | **Jobs**         | `job_manage`, `job_status` |
+| **Observability**| `otel_configure_collection` |
 
 **Authentication** (in priority order):
 1. Internal service secret (`CPF_INTERNAL_SERVICE_SECRET` header) — used by LibreChat

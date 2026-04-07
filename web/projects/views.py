@@ -15,20 +15,32 @@ class ProjectListView(LoginRequiredMixin, ListView):
     context_object_name = 'projects'
 
     def get_queryset(self):
+        from django.db.models import Q, Subquery, OuterRef
+        from projects.models import ProjectUsage
+
         # Admin sees all
         if self.request.user.is_superuser:
             queryset = PathfinderProject.objects.all().select_related('user')
         else:
             # User sees own projects + projects shared with them
-            from django.db.models import Q
             queryset = PathfinderProject.objects.filter(
                 Q(user=self.request.user) | Q(shared_with=self.request.user)
             ).distinct()
-        
+
+        # Annotate with user-specific usage count
+        queryset = queryset.annotate(
+            user_usage_count=Subquery(
+                ProjectUsage.objects.filter(
+                    user=self.request.user,
+                    project=OuterRef('pk')
+                ).values('usage_count')[:1]
+            )
+        )
+
         # Check and update status for each project
         for project in queryset:
             check_and_update_project_status(project)
-            
+
         return queryset
 
 class ProjectCreateView(LoginRequiredMixin, CreateView):

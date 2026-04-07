@@ -41,6 +41,9 @@ class PathfinderProject(models.Model):
     stage_message = models.TextField(blank=True, default='', help_text="Human-readable stage context or error reason shown to users")
     last_progress_at = models.DateTimeField(null=True, blank=True, help_text="Last time ES doc count increased; used for stall detection")
 
+    # Usage tracking
+    usage_count = models.IntegerField(default=0, help_text="Total times this project was used across all users")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -68,6 +71,28 @@ class PathfinderProject(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.status})"
+
+    def increment_usage(self, user=None):
+        """
+        Increment usage count atomically for both aggregate and per-user tracking.
+
+        Args:
+            user: Django User instance (optional for backward compatibility)
+        """
+        from django.db.models import F
+
+        # Increment aggregate counter
+        PathfinderProject.objects.filter(pk=self.pk).update(usage_count=F('usage_count') + 1)
+
+        # Increment per-user counter if user provided
+        if user and user.is_authenticated:
+            usage, created = ProjectUsage.objects.get_or_create(
+                user=user,
+                project=self,
+                defaults={'usage_count': 1}
+            )
+            if not created:
+                ProjectUsage.objects.filter(pk=usage.pk).update(usage_count=F('usage_count') + 1)
 
 
 class ProjectAPIKey(models.Model):
@@ -273,3 +298,54 @@ class OtelCollectionSettings(models.Model):
         if not self.service_name:
             self.service_name = self.project.name.lower().replace(' ', '-')
         super().save(*args, **kwargs)
+
+
+class ProjectUsage(models.Model):
+    """
+    Track per-user project usage for analytics and personalized recommendations.
+
+    This model enables:
+    - Showing user's most-used projects
+    - Tracking project popularity per user
+    - Admin view of both personal and global usage
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='project_usages',
+        help_text="User who accessed the project"
+    )
+    project = models.ForeignKey(
+        PathfinderProject,
+        on_delete=models.CASCADE,
+        related_name='user_usages',
+        help_text="Project that was accessed"
+    )
+    used_at = models.DateTimeField(
+        auto_now=True,
+        help_text="Last time this user accessed this project"
+    )
+    usage_count = models.IntegerField(
+        default=1,
+        help_text="Number of times this user has used this project"
+    )
+
+    class Meta:
+        verbose_name = "Project Usage"
+        verbose_name_plural = "Project Usages"
+        unique_together = ['user', 'project']
+        ordering = ['-used_at']
+        indexes = [
+            models.Index(fields=['user', '-used_at']),
+            models.Index(fields=['user', '-usage_count']),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.project.name} ({self.usage_count}x)"
+
+    def increment(self):
+        """Increment usage count atomically."""
+        from django.db.models import F
+        ProjectUsage.objects.filter(pk=self.pk).update(usage_count=F('usage_count') + 1)
+        self.refresh_from_db()

@@ -19,6 +19,12 @@
                     <th>Status</th> <!-- Restored Status Column -->
                     <th>Last run</th>
                     <th>Enabled</th>
+                    {% if user.is_staff %}
+                        <th style="text-align: center;">My Usage</th>
+                        <th style="text-align: center;">Total Usage</th>
+                    {% else %}
+                        <th style="text-align: center;">Usage</th>
+                    {% endif %}
                     <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
@@ -91,6 +97,18 @@
                         {% endif %}
                         {% endif %}
                     </td>
+                    {% if user.is_staff %}
+                        <td style="text-align: center;">
+                            <span class="badge badge-secondary">{{ project.user_usage_count|default:0 }}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span class="badge badge-info">{{ project.usage_count }}</span>
+                        </td>
+                    {% else %}
+                        <td style="text-align: center;">
+                            <span class="badge badge-info">{{ project.user_usage_count|default:0 }}</span>
+                        </td>
+                    {% endif %}
                     <td style="text-align: right;">
                         <div class="flex gap-2 items-center justify-end">
                             <!-- Share Button -->

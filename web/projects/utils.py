@@ -941,3 +941,25 @@ def check_and_update_project_status(project):
 
     except Exception as e:
         logger.error(f"Failed to check job status for project {project.name}: {e}")
+
+
+def track_project_usage(project, user):
+    """
+    Track project usage atomically for both aggregate and per-user counters.
+
+    Best-effort tracking: swallows exceptions to never fail requests.
+
+    Args:
+        project: PathfinderProject instance
+        user: Django User instance
+
+    Returns:
+        None
+    """
+    if not user or not user.is_authenticated:
+        return
+
+    try:
+        project.increment_usage(user)
+    except Exception as e:
+        logger.warning(f"Failed to track project usage: {e}", exc_info=True)

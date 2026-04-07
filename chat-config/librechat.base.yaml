@@ -63,6 +63,20 @@ modelSpecs:
         model: "us.anthropic.claude-sonnet-4-6"
         mcpServers:
           - "codepathfinder"
+        promptPrefix: |
+          You have access to CodePathfinder MCP tools for code search, GitHub operations, user memory, and reusable skills.
+
+          **When to use MCP tools (check these FIRST):**
+          - GitHub or codebase questions → search_code, get_file_content, list_repo_files, github_*
+          - User memory, preferences, or saved context → memories_search, memories_get, memories_list
+          - Reusable workflows, procedures, or skills → skills_search, skills_get, skills_list
+          - Prior conversations or decisions → memories_search with relevant tags
+          - Job status or project metadata → projects_*, jobs_*
+
+          **Tool priority policy:**
+          When a request may involve GitHub, codebases, user memory, saved preferences, reusable skills, or prior context, check the CodePathfinder MCP tools first. Treat that server as the authoritative source for those categories. Only answer without tools if they are unavailable or return nothing relevant.
+
+          If tools fail or return no results, explain what you checked before falling back to general knowledge.
     - name: "bedrock-claude-opus-4-6"
       label: "Claude Opus 4.6"
       description: "Anthropic Claude Opus 4.6 via AWS Bedrock with CodePathfinder tools"
@@ -75,6 +89,20 @@ modelSpecs:
         model: "us.anthropic.claude-opus-4-6-v1"
         mcpServers:
           - "codepathfinder"
+        promptPrefix: |
+          You have access to CodePathfinder MCP tools for code search, GitHub operations, user memory, and reusable skills.
+
+          **When to use MCP tools (check these FIRST):**
+          - GitHub or codebase questions → search_code, get_file_content, list_repo_files, github_*
+          - User memory, preferences, or saved context → memories_search, memories_get, memories_list
+          - Reusable workflows, procedures, or skills → skills_search, skills_get, skills_list
+          - Prior conversations or decisions → memories_search with relevant tags
+          - Job status or project metadata → projects_*, jobs_*
+
+          **Tool priority policy:**
+          When a request may involve GitHub, codebases, user memory, saved preferences, reusable skills, or prior context, check the CodePathfinder MCP tools first. Treat that server as the authoritative source for those categories. Only answer without tools if they are unavailable or return nothing relevant.
+
+          If tools fail or return no results, explain what you checked before falling back to general knowledge.
     - name: "bedrock-claude-haiku-4-5"
       label: "Claude Haiku 4.5"
       description: "Anthropic Claude Haiku 4.5 via AWS Bedrock with CodePathfinder tools"
@@ -87,3 +115,17 @@ modelSpecs:
         model: "us.anthropic.claude-haiku-4-5-20251001-v1:0"
         mcpServers:
           - "codepathfinder"
+        promptPrefix: |
+          You have access to CodePathfinder MCP tools for code search, GitHub operations, user memory, and reusable skills.
+
+          **When to use MCP tools (check these FIRST):**
+          - GitHub or codebase questions → search_code, get_file_content, list_repo_files, github_*
+          - User memory, preferences, or saved context → memories_search, memories_get, memories_list
+          - Reusable workflows, procedures, or skills → skills_search, skills_get, skills_list
+          - Prior conversations or decisions → memories_search with relevant tags
+          - Job status or project metadata → projects_*, jobs_*
+
+          **Tool priority policy:**
+          When a request may involve GitHub, codebases, user memory, saved preferences, reusable skills, or prior context, check the CodePathfinder MCP tools first. Treat that server as the authoritative source for those categories. Only answer without tools if they are unavailable or return nothing relevant.
+
+          If tools fail or return no results, explain what you checked before falling back to general knowledge.

@@ -19,7 +19,12 @@ from typing import Any, Generator, Optional
 from django.conf import settings
 
 from mcp_server.tools import TOOL_DEFINITIONS, execute_tool, ToolError
-from .librechat_config import PROVIDER_ANTHROPIC, PROVIDER_BEDROCK, PROVIDER_OPENAI
+from .librechat_config import (
+    PROVIDER_ANTHROPIC,
+    PROVIDER_BEDROCK,
+    PROVIDER_OPENAI,
+    PROVIDER_OPENROUTER,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -433,6 +438,103 @@ def stream_openai(
     return full_text
 
 
+def stream_openrouter(
+    messages: list[dict],
+    model_id: str,
+    system: str,
+    user,
+) -> Generator[str, None, str]:
+    """Stream via OpenRouter (OpenAI-compatible) with function calling."""
+    try:
+        from openai import OpenAI
+    except ImportError:
+        yield _sse("error", {"message": "OpenAI SDK not installed. Run: pip install openai"})
+        return ""
+
+    api_key = os.getenv("OPENROUTER_API_KEY")
+    if not api_key:
+        yield _sse("error", {"message": "OPENROUTER_API_KEY not configured"})
+        return ""
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://openrouter.ai/api/v1",
+    )
+    tools = _tools_for_openai()
+    oai_messages = [{"role": "system", "content": system}] + messages
+    full_text = ""
+
+    for _ in range(MAX_TOOL_ROUNDS):
+        stream = client.chat.completions.create(
+            model=model_id,
+            messages=oai_messages,
+            tools=tools,
+            stream=True,
+        )
+
+        current_text = ""
+        tool_calls_acc: dict[int, dict] = {}  # index → {id, name, arguments}
+
+        for chunk in stream:
+            delta = chunk.choices[0].delta if chunk.choices else None
+            if delta is None:
+                continue
+
+            if delta.content:
+                chunk_text = delta.content
+                current_text += chunk_text
+                full_text += chunk_text
+                yield _sse("text", chunk_text)
+
+            if delta.tool_calls:
+                for tc in delta.tool_calls:
+                    idx = tc.index
+                    if idx not in tool_calls_acc:
+                        tool_calls_acc[idx] = {"id": tc.id or "", "name": "", "arguments": ""}
+                        if tc.function and tc.function.name:
+                            tool_calls_acc[idx]["name"] = tc.function.name
+                            yield _sse("tool_call", {"tool": tc.function.name, "status": "running"})
+                    if tc.function:
+                        if tc.function.name and not tool_calls_acc[idx]["name"]:
+                            tool_calls_acc[idx]["name"] = tc.function.name
+                        if tc.function.arguments:
+                            tool_calls_acc[idx]["arguments"] += tc.function.arguments
+
+        if not tool_calls_acc:
+            break
+
+        assistant_msg = {"role": "assistant", "content": current_text or None, "tool_calls": []}
+        for idx in sorted(tool_calls_acc):
+            tc = tool_calls_acc[idx]
+            assistant_msg["tool_calls"].append({
+                "id": tc["id"],
+                "type": "function",
+                "function": {"name": tc["name"], "arguments": tc["arguments"]},
+            })
+        oai_messages.append(assistant_msg)
+
+        for idx in sorted(tool_calls_acc):
+            tc = tool_calls_acc[idx]
+            try:
+                args = json.loads(tc["arguments"] or "{}")
+                result = execute_tool(tc["name"], args, user=user)
+                yield _sse("tool_call", {"tool": tc["name"], "status": "done"})
+                oai_messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": str(result),
+                })
+            except Exception as e:
+                yield _sse("tool_call", {"tool": tc["name"], "status": "error"})
+                oai_messages.append({
+                    "role": "tool",
+                    "tool_call_id": tc["id"],
+                    "content": f"Error: {e}",
+                })
+
+    return full_text
+
+
 # ── Public entry point ────────────────────────────────────────────────────────
 
 def generate_stream(
@@ -459,6 +561,8 @@ def generate_stream(
             gen = stream_bedrock(history, model_id, system, user)
         elif provider == PROVIDER_OPENAI:
             gen = stream_openai(history, model_id, system, user)
+        elif provider == PROVIDER_OPENROUTER:
+            gen = stream_openrouter(history, model_id, system, user)
         else:
             yield _sse("error", {"message": f"Unknown provider: {provider}"})
             return

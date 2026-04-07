@@ -1021,6 +1021,50 @@ def _get_index_name(index: Optional[str] = None) -> str:
     return index or os.environ.get('ELASTICSEARCH_INDEX', 'code-chunks')
 
 
+def _track_project_usage_for_search(user, projects: Optional[List[str]] = None):
+    """
+    Track usage for projects being searched via MCP tools.
+
+    Best-effort tracking: swallows exceptions to never fail tool execution.
+
+    Args:
+        user: Django User instance
+        projects: Optional list of project names. If None, tracks all accessible projects
+    """
+    if not user or not user.is_authenticated:
+        return
+
+    try:
+        from projects.utils import track_project_usage
+        from django.db.models import Q
+
+        # Build query for projects being searched
+        if projects:
+            # Track specific projects
+            name_query = Q()
+            for p_name in projects:
+                name_query |= Q(name__iexact=p_name)
+            filters = name_query & Q(is_enabled=True)
+        else:
+            # Track all accessible projects
+            filters = Q(is_enabled=True)
+
+        # Apply user access filters
+        if not user.is_superuser:
+            filters &= (Q(user=user) | Q(shared_with=user))
+
+        # Get projects and track usage
+        project_list = PathfinderProject.objects.filter(filters).exclude(status='disabled')
+        for project in project_list:
+            try:
+                track_project_usage(project, user)
+            except Exception:
+                pass  # Best-effort: don't fail if one project tracking fails
+
+    except Exception as e:
+        logger.debug(f"Project usage tracking skipped: {e}")
+
+
 def resolve_project_indices(user, projects: Optional[List[str]] = None, index: Optional[str] = None) -> str:
     """
     Resolve project names to Elasticsearch index names with user authorization.
@@ -1180,6 +1224,9 @@ def semantic_code_search(
     if not es:
         raise ToolError("Search unavailable: Elasticsearch configuration missing")
 
+    # Track project usage
+    _track_project_usage_for_search(user, projects)
+
     index_name = resolve_project_indices(user, projects, index)
 
     # Get inference_id from config
@@ -1329,6 +1376,9 @@ def map_symbols_by_query(
     es = get_es_client()
     if not es:
         raise ToolError("Search unavailable: Elasticsearch configuration missing")
+
+    # Track project usage
+    _track_project_usage_for_search(user, projects)
 
     index_name = resolve_project_indices(user, projects, index)
 
@@ -1518,6 +1568,8 @@ def symbol_analysis(
     if not es:
         raise ToolError("Search unavailable: Elasticsearch configuration missing")
 
+    # Note: Don't track usage - this is a follow-up analysis tool, not a primary search
+
     index_name = resolve_project_indices(user, projects, index)
 
     try:
@@ -1634,6 +1686,9 @@ def read_file_from_chunks(
     if not es:
         raise ToolError("Search unavailable: Elasticsearch configuration missing")
 
+    # Note: Don't track usage for file reads - only track search operations
+    # This provides more intuitive usage counts aligned with user-initiated searches
+
     index_name = resolve_project_indices(user, projects, index)
 
     try:
@@ -1727,6 +1782,8 @@ def document_symbols(
     es = get_es_client()
     if not es:
         raise ToolError("Search unavailable: Elasticsearch configuration missing")
+
+    # Note: Don't track usage - this is a documentation helper, not a primary search
 
     index_name = resolve_project_indices(user, projects, index)
 
@@ -2519,8 +2576,8 @@ def skills_get(
         if not skill:
             return f"Skill not found: {name}"
 
-        # Increment usage count
-        skill.increment_usage()
+        # Increment usage count (aggregate + per-user)
+        skill.increment_usage(user)
 
         result_parts = [
             f"Skill: {skill.name}",
@@ -2955,11 +3012,8 @@ def skills_activate(
             else:
                 raise ToolError(f"Skill '{name}' not found. Use skills_list or skills_search to find available skills.")
 
-        # Track usage
-        usage, created = SkillUsage.objects.get_or_create(user=user, skill=skill)
-        if not created:
-            usage.increment()
-        skill.increment_usage()
+        # Track usage (aggregate + per-user)
+        skill.increment_usage(user)
 
         # Build the activation response
         tools_section = ""
@@ -4886,7 +4940,8 @@ def memories_get(memory_id: int, user=None) -> str:
         memory = service.get_memory(memory_id, user)
         if not memory:
             return f"Memory {memory_id} not found or access denied."
-        memory.increment_usage()
+        # Track usage (aggregate + per-user)
+        memory.increment_usage(user)
         scope_label = "Organization" if memory.scope == 'organization' else "Personal"
         parts = [
             f"Memory: {memory.title}",
@@ -4911,10 +4966,22 @@ def memories_search(query: str, limit: int = 5, user=None) -> str:
     """Semantic search across accessible memories."""
     try:
         from memories.services import MemoryService
+        from memories.models import Memory
         service = MemoryService()
         results = service.search_memories(query, user, limit=limit)
         if not results:
             return f"No memories found for: {query}"
+
+        # Track usage for each result returned
+        if user and user.is_authenticated:
+            memory_ids = [r['id'] for r in results]
+            memories = Memory.objects.filter(pk__in=memory_ids)
+            for memory in memories:
+                try:
+                    memory.increment_usage(user)
+                except Exception:
+                    pass  # Best-effort tracking
+
         parts = [f"Memory search results for: '{query}'", "=" * 50]
         for r in results:
             scope_label = "[Org]" if r.get('scope') == 'organization' else "[Personal]"

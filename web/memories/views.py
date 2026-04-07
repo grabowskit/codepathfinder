@@ -91,6 +91,9 @@ class MemoryListView(LoginRequiredMixin, View):
     template_name = 'memories/memory_list.html'
 
     def get(self, request):
+        from django.db.models import Q, Subquery, OuterRef
+        from memories.models import MemoryUsage
+
         service = MemoryService()
         scope = request.GET.get('scope', 'all')
         tag_filter = request.GET.get('tag', '')
@@ -102,10 +105,20 @@ class MemoryListView(LoginRequiredMixin, View):
             scope=scope if scope != 'all' else None,
             memory_type=type_filter or None,
         )
+
+        # Annotate with user-specific usage count
+        qs = qs.annotate(
+            user_usage_count=Subquery(
+                MemoryUsage.objects.filter(
+                    user=request.user,
+                    memory=OuterRef('pk')
+                ).values('usage_count')[:1]
+            )
+        )
+
         if tag_filter:
             qs = qs.filter(tags__contains=[tag_filter])
         if search_q:
-            from django.db.models import Q
             qs = qs.filter(Q(title__icontains=search_q) | Q(content__icontains=search_q))
 
         # Collect all tags for filter dropdown

@@ -116,16 +116,21 @@
                 </th>
                 <th class="skills-th-description">Description</th>
                 <th class="skills-th-tags">Tags</th>
-                <th class="skills-th-usage">
-                    <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if tag_filter %}tag={{ tag_filter|urlencode }}&{% endif %}sort=usage_count&order={% if sort_by == 'usage_count' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="skills-sort-link">
-                        Usage
-                        {% if sort_by == 'usage_count' %}
-                            <span class="skills-sort-indicator">
-                                {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
-                            </span>
-                        {% endif %}
-                    </a>
-                </th>
+                {% if user.is_staff %}
+                    <th class="skills-th-usage" style="text-align: center;">My Usage</th>
+                    <th class="skills-th-usage">
+                        <a href="?{% if search_query %}q={{ search_query|urlencode }}&{% endif %}{% if tag_filter %}tag={{ tag_filter|urlencode }}&{% endif %}sort=usage_count&order={% if sort_by == 'usage_count' and sort_order == 'asc' %}desc{% else %}asc{% endif %}" class="skills-sort-link">
+                            Total Usage
+                            {% if sort_by == 'usage_count' %}
+                                <span class="skills-sort-indicator">
+                                    {% if sort_order == 'asc' %}↑{% else %}↓{% endif %}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </th>
+                {% else %}
+                    <th class="skills-th-usage" style="text-align: center;">Usage</th>
+                {% endif %}
                 <th class="skills-th-actions"></th>
             </tr>
         </thead>
@@ -168,9 +173,18 @@
                         {% endif %}
                     </div>
                 </td>
-                <td class="skills-cell-usage">
-                    <span class="skills-usage-count">{{ skill.usage_count }}</span>
-                </td>
+                {% if user.is_staff %}
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ skill.user_usage_count|default:0 }}</span>
+                    </td>
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ skill.usage_count }}</span>
+                    </td>
+                {% else %}
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ skill.user_usage_count|default:0 }}</span>
+                    </td>
+                {% endif %}
                 <td class="skills-cell-actions">
                     <div class="skills-actions-group">
                         {% if user.is_superuser %}

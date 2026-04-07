@@ -44,6 +44,10 @@ def save_message(conversation_id: str, user_id: int, project_id, role: str,
     role: 'user' | 'assistant'
     message_index: 0-based position in conversation
     title: set from first user message; ignored if empty
+
+    IMPORTANT: Uses refresh=True to force an immediate index refresh, making messages
+    instantly searchable. This prevents race conditions where rapid follow-up messages
+    don't see the previous assistant response in the conversation history.
     """
     es = _get_es()
     if not es:
@@ -70,6 +74,7 @@ def save_message(conversation_id: str, user_id: int, project_id, role: str,
             index=ES_INDEX,
             id=f"conv_{conversation_id}",
             body={"doc": conv_update, "doc_as_upsert": True},
+            refresh=True,
         )
     except Exception as e:
         logger.warning("Failed to upsert conversation %s: %s", conversation_id, e)
@@ -90,6 +95,7 @@ def save_message(conversation_id: str, user_id: int, project_id, role: str,
             index=ES_INDEX,
             id=f"msg_{conversation_id}_{message_index}",
             body=msg_doc,
+            refresh=True,
         )
     except Exception as e:
         logger.warning("Failed to save message %d for conv %s: %s",
@@ -110,6 +116,7 @@ def close_conversation(conversation_id: str, user_id: int, short_title: str):
                 "short_title": short_title,
                 "closed_at": _now(),
             }},
+            refresh=True,
         )
     except Exception as e:
         logger.warning("Failed to close conv %s: %s", conversation_id, e)
@@ -125,6 +132,7 @@ def update_title(conversation_id: str, title: str):
             index=ES_INDEX,
             id=f"conv_{conversation_id}",
             body={"doc": {"title": title}},
+            refresh=True,
         )
     except Exception as e:
         logger.debug("Failed to update title for conv %s: %s", conversation_id, e)
@@ -142,7 +150,7 @@ def delete_conversation(conversation_id: str, user_id: int):
                 "query": {
                     "bool": {
                         "filter": [
-                            {"term": {"conversation_id": conversation_id}},
+                            {"term": {"conversation_id.keyword": conversation_id}},
                             {"term": {"user_id": user_id}},
                         ]
                     }
@@ -168,14 +176,14 @@ def list_conversations(user_id: int, limit: int = 30, status: Optional[str] = No
         return []
 
     filters = [
-        {"term": {"type": "conv"}},
+        {"term": {"type.keyword": "conv"}},
         {"term": {"user_id": user_id}},
     ]
     if status == "closed":
-        filters.append({"term": {"status": "closed"}})
+        filters.append({"term": {"status.keyword": "closed"}})
         filters.append({"range": {"closed_at": {"gte": "now-30d"}}})
     elif status == "active":
-        filters.append({"bool": {"must_not": {"term": {"status": "closed"}}}})
+        filters.append({"bool": {"must_not": {"term": {"status.keyword": "closed"}}}})
 
     try:
         resp = es.search(
@@ -211,8 +219,8 @@ def get_messages(conversation_id: str, user_id: int) -> list[dict]:
                 "query": {
                     "bool": {
                         "filter": [
-                            {"term": {"type": "msg"}},
-                            {"term": {"conversation_id": conversation_id}},
+                            {"term": {"type.keyword": "msg"}},
+                            {"term": {"conversation_id.keyword": conversation_id}},
                             {"term": {"user_id": user_id}},
                         ]
                     }

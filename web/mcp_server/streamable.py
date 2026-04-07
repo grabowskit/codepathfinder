@@ -63,6 +63,12 @@ def _get_injected_memories(tool_args: dict, user) -> str:
 
         blocks = []
         for memory in matching:
+            # Track usage for auto-injected memories (best-effort)
+            try:
+                memory.increment_usage(user)
+            except Exception:
+                pass  # Never fail tool execution due to tracking errors
+
             blocks.append(f"[{memory.title}]\n{memory.content}")
 
         combined = "\n\n---\n\n".join(blocks)

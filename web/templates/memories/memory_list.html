@@ -106,7 +106,12 @@
                 <th class="mem-th-content">Content</th>
                 <th class="mem-th-tags">Tags</th>
                 <th class="mem-th-scope">Scope</th>
-                <th class="mem-th-usage">Usage</th>
+                {% if user.is_staff %}
+                    <th class="mem-th-usage" style="text-align: center;">My Usage</th>
+                    <th class="mem-th-usage" style="text-align: center;">Total Usage</th>
+                {% else %}
+                    <th class="mem-th-usage" style="text-align: center;">Usage</th>
+                {% endif %}
                 <th class="mem-th-actions"></th>
             </tr>
         </thead>
@@ -150,9 +155,18 @@
                     <span class="mem-scope-badge mem-scope-user">Personal</span>
                     {% endif %}
                 </td>
-                <td class="skills-cell-usage">
-                    <span class="skills-usage-count">{{ memory.usage_count }}</span>
-                </td>
+                {% if user.is_staff %}
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ memory.user_usage_count|default:0 }}</span>
+                    </td>
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ memory.usage_count }}</span>
+                    </td>
+                {% else %}
+                    <td class="skills-cell-usage" style="text-align: center;">
+                        <span class="skills-usage-count">{{ memory.user_usage_count|default:0 }}</span>
+                    </td>
+                {% endif %}
                 <td class="skills-cell-actions">
                     <div class="skills-actions-group">
                         {% if memory.scope == 'organization' and user.is_staff or memory.created_by == user %}
@@ -164,7 +178,7 @@
                         </a>
                         <button type="button" class="skills-icon-btn mem-delete-btn" title="Delete"
                                 data-delete-url="{% url 'memory_delete' memory.pk %}"
-                                onclick="openDeleteModal(this.dataset.deleteUrl, '{{ memory.title|escapejs }}')">
+                                onclick="openDeleteMemoryModal(this.dataset.deleteUrl, '{{ memory.title|escapejs }}')">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6" />
@@ -228,7 +242,7 @@
         <p class="mem-modal-text">Are you sure you want to delete <strong id="deleteMemoryName"></strong>?</p>
         <p class="mem-modal-subtext">This action cannot be undone.</p>
         <div class="mem-modal-actions">
-            <button type="button" class="mem-modal-btn mem-modal-btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button type="button" class="mem-modal-btn mem-modal-btn-cancel" onclick="closeDeleteMemoryModal()">Cancel</button>
             <form id="deleteMemoryForm" method="post" style="display: inline;">
                 {% csrf_token %}
                 <button type="submit" class="mem-modal-btn mem-modal-btn-delete">Delete</button>
@@ -629,23 +643,23 @@
 </style>
 
 <script>
-function openDeleteModal(deleteUrl, title) {
+function openDeleteMemoryModal(deleteUrl, title) {
     document.getElementById('deleteMemoryName').textContent = '"' + title + '"';
     document.getElementById('deleteMemoryForm').action = deleteUrl;
     document.getElementById('deleteMemoryModal').style.display = 'flex';
 }
 
-function closeDeleteModal() {
+function closeDeleteMemoryModal() {
     document.getElementById('deleteMemoryModal').style.display = 'none';
 }
 
 document.addEventListener('click', function(e) {
     const modal = document.getElementById('deleteMemoryModal');
-    if (e.target === modal) closeDeleteModal();
+    if (e.target === modal) closeDeleteMemoryModal();
 });
 
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeDeleteModal();
+    if (e.key === 'Escape') closeDeleteMemoryModal();
 });
 </script>
 {% endblock %}

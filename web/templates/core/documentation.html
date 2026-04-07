@@ -20,19 +20,21 @@
                 <li style="margin-bottom: 0.5rem;"><a href="#project-management" style="color: var(--primary);">2.
                         Project Management</a></li>
                 <li style="margin-bottom: 0.5rem;"><a href="#skills" style="color: var(--primary);">3. Skills</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="#api-mcp" style="color: var(--primary);">4. API &amp; MCP
+                <li style="margin-bottom: 0.5rem;"><a href="#memories" style="color: var(--primary);">4. Memories</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#llm-models" style="color: var(--primary);">5. LLM Models</a></li>
+                <li style="margin-bottom: 0.5rem;"><a href="#api-mcp" style="color: var(--primary);">6. API &amp; MCP
                         Tool Calling</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="#chat-api" style="color: var(--primary);">5. Chat
+                <li style="margin-bottom: 0.5rem;"><a href="#chat-api" style="color: var(--primary);">7. Chat
                         API</a></li>
                 {% if user.is_superuser %}
-                <li style="margin-bottom: 0.5rem;"><a href="#user-management" style="color: var(--primary);">6. User
+                <li style="margin-bottom: 0.5rem;"><a href="#user-management" style="color: var(--primary);">8. User
                         Management (Admin)</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="#system-settings" style="color: var(--primary);">7. System
+                <li style="margin-bottom: 0.5rem;"><a href="#system-settings" style="color: var(--primary);">9. System
                         Settings (Admin)</a></li>
-                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">8.
+                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">10.
                         Troubleshooting</a></li>
                 {% else %}
-                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">6.
+                <li style="margin-bottom: 0.5rem;"><a href="#troubleshooting" style="color: var(--primary);">8.
                         Troubleshooting</a></li>
                 {% endif %}
             </ul>
@@ -55,9 +57,9 @@
             <li style="margin-bottom: 0.5rem;">Uses AI-powered semantic search to find relevant code by meaning, not
                 just keywords</li>
             <li style="margin-bottom: 0.5rem;">Integrates with Claude Desktop, ChatGPT, and Gemini via MCP (Model Context Protocol)</li>
-            <li style="margin-bottom: 0.5rem;">Provides 21 powerful tools for code search, GitHub operations, skills, and job management</li>
+            <li style="margin-bottom: 0.5rem;">Provides 29 powerful tools for code search, GitHub operations, skills, memories, jobs, and observability</li>
             <li style="margin-bottom: 0.5rem;">Supports 17+ programming languages and file formats natively</li>
-            <li style="margin-bottom: 0.5rem;">Includes an AI Chat interface powered by LibreChat with multi-model support (GPT-5, Claude Sonnet 4)
+            <li style="margin-bottom: 0.5rem;">Includes an AI Chat interface powered by LibreChat with multi-model support (Claude Sonnet 4.6, Opus 4.6, Haiku 4.5 via AWS Bedrock)
             </li>
         </ul>
 
@@ -714,9 +716,639 @@ Analyze the code for:
         {% endif %}
     </div>
 
+    <!-- ==================== MEMORIES ==================== -->
+    <div class="card mb-6" id="memories">
+        <h2>4. Memories</h2>
+        <p style="margin-bottom: 1.5rem;">Memories are a persistent knowledge system for storing and retrieving context across conversations. Build a personal knowledge base or share organization-wide memories.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What are Memories?</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Memories store important facts, documentation, and context that can be semantically searched and automatically injected into Chat conversations. Think of them as:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>Personal notes:</strong> Your coding patterns, project knowledge, preferences</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Team documentation:</strong> Shared guidelines, architecture decisions, API specs</li>
+            <li style="margin-bottom: 0.5rem;"><strong>RAG documents:</strong> Import full documentation as chunked, searchable memories</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Context automation:</strong> Memories with matching tags auto-inject into relevant conversations</li>
+        </ul>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Memory Types</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Type</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Best For</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Text</strong></td>
+                    <td style="padding: 0.75rem;">Short facts, snippets, or notes (single memory entry)</td>
+                    <td style="padding: 0.75rem;">Quick facts, code patterns, API endpoints</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Document</strong></td>
+                    <td style="padding: 0.75rem;">Long-form content, automatically chunked for retrieval</td>
+                    <td style="padding: 0.75rem;">Full documentation, guides, specifications</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Memory Scopes</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Scope</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Visibility</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Permissions</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>User (Personal)</strong></td>
+                    <td style="padding: 0.75rem;">Only you can see and use</td>
+                    <td style="padding: 0.75rem;">All users can create personal memories</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Organization</strong></td>
+                    <td style="padding: 0.75rem;">Visible to all users in the organization</td>
+                    <td style="padding: 0.75rem;">Admin-only creation and editing</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Creating Memories</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Navigate to <strong>Memories</strong> in the sidebar and click <strong>+ Create Memory</strong>:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Field</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Title</strong></td>
+                    <td style="padding: 0.75rem;">Short, descriptive name for the memory</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Content</strong></td>
+                    <td style="padding: 0.75rem;">The actual memory content (supports Markdown)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Tags</strong></td>
+                    <td style="padding: 0.75rem;">Keywords for filtering and auto-injection (comma-separated: <code>python, testing, api</code>)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Type</strong></td>
+                    <td style="padding: 0.75rem;">Text (short) or Document (long-form)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Scope</strong></td>
+                    <td style="padding: 0.75rem;">Personal (default) or Organization (admin only)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Auto-Injection</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Memories with matching tags automatically inject into Chat conversations:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;"><strong>Word-level matching:</strong> If your message contains a memory's tag (e.g., "python"), that memory is included</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Combined context:</strong> Personal + organization memories both inject when relevant</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Invisible to you:</strong> Auto-injection happens behind the scenes — the AI sees it, you don't</li>
+        </ul>
+
+        <div style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Example:</strong> Create a memory tagged with "api, authentication" containing your API auth patterns. When you ask "How do I call the login API?", that memory automatically injects, providing the AI with your preferred patterns.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Importing Documents</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Import full Markdown documents as chunked memories via <strong>Memories → Import Document</strong>:</p>
+        <ol style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Paste your full Markdown document content</li>
+            <li style="margin-bottom: 0.5rem;">Set title and tags for the document</li>
+            <li style="margin-bottom: 0.5rem;">Click <strong>Import</strong> — the system chunks it automatically</li>
+            <li style="margin-bottom: 0.5rem;">Each chunk is indexed for semantic search via ELSER</li>
+        </ol>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Memories MCP Tools</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Memories are accessible via 7 MCP tools for programmatic access:</p>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Tool Name</th>
+                    <th>Capability & Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_list</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">List memories with optional filtering by tags, scope, or type.</p>
+                        <span class="doc-code-example">"Show me all my personal memories about testing"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_get</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Get a specific memory by ID with full content.</p>
+                        <span class="doc-code-example">"Get memory #42"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_search</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Semantic search across personal and organization memories using ELSER.</p>
+                        <span class="doc-code-example">"Search memories for authentication patterns"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_create</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Create a new memory. Personal scope open to all; org scope requires admin.</p>
+                        <span class="doc-code-example">"Remember that our API rate limit is 1000 req/min"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_update</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Update an existing memory's title, content, tags, or scope.</p>
+                        <span class="doc-code-example">"Update memory #42 with the new rate limit"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_delete</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Soft-delete a memory. Owner can delete personal; admins can delete org.</p>
+                        <span class="doc-code-example">"Delete memory #42"</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="width: 200px; vertical-align: top;">
+                        <span class="doc-action-name" style="font-family: monospace;">memories_import</span>
+                    </td>
+                    <td>
+                        <p class="doc-action-desc" style="margin-bottom: 0.5rem;">Import a full Markdown document as a chunked RAG memory.</p>
+                        <span class="doc-code-example">"Import this API documentation as a memory"</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Memory Interview Wizard</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">The <strong>Memory Interview Wizard</strong> is an interactive tool that helps you build a comprehensive personal context through guided questions:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Navigate to <strong>Memories → Interview Wizard</strong></li>
+            <li style="margin-bottom: 0.5rem;">Answer questions about your role, preferences, projects, and patterns</li>
+            <li style="margin-bottom: 0.5rem;">AI generates well-structured memories from your responses</li>
+            <li style="margin-bottom: 0.5rem;">Review, edit, and save generated memories to your collection</li>
+        </ul>
+    </div>
+
+    <!-- ==================== LLM MODELS ==================== -->
+    <div class="card mb-6" id="llm-models">
+        <h2>5. LLM Models</h2>
+        <p style="margin-bottom: 1.5rem;">CodePathfinder supports 15+ LLM providers through LibreChat. Configure your preferred models to power the AI Chat interface with access to all 29 CodePathfinder MCP tools.</p>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Default Configuration</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder ships with these models pre-configured:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color);">
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Model</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Provider</th>
+                    <th style="text-align: left; padding: 0.75rem; color: var(--text-primary);">Description</th>
+                </tr>
+            </thead>
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Claude Sonnet 4.6</strong></td>
+                    <td style="padding: 0.75rem;">AWS Bedrock</td>
+                    <td style="padding: 0.75rem;">Balanced performance and speed (default model)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Claude Opus 4.6</strong></td>
+                    <td style="padding: 0.75rem;">AWS Bedrock</td>
+                    <td style="padding: 0.75rem;">Most capable model for complex tasks</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>Claude Haiku 4.5</strong></td>
+                    <td style="padding: 0.75rem;">AWS Bedrock</td>
+                    <td style="padding: 0.75rem;">Fast and efficient for simpler queries</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong>OpenRouter Auto</strong></td>
+                    <td style="padding: 0.75rem;">OpenRouter</td>
+                    <td style="padding: 0.75rem;">Multi-provider access (100+ models)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Note:</strong> All configured models automatically have access to all 29 CodePathfinder MCP tools by default. You can add any of the 15+ supported providers below.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Supported Providers</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">CodePathfinder supports all major LLM providers through LibreChat:</p>
+
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th>Provider</th>
+                    <th>Models Available</th>
+                    <th>Configuration</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">OpenAI</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">GPT-4o, GPT-4 Turbo, GPT-4, GPT-3.5 Turbo, o1-preview, o1-mini</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/openai" target="_blank" style="color: var(--primary); font-size: 0.85rem;">OpenAI Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Anthropic</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Claude 3.5 Sonnet, Claude 3 Opus, Claude 3 Sonnet, Claude 3 Haiku (via direct API)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/anthropic" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Anthropic Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">AWS Bedrock</span>
+                        <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); font-size: 0.65rem; margin-left: 0.5rem;">Default</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Claude 4.6, Titan, Llama 3, Mistral, and more via AWS infrastructure</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/bedrock" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Bedrock Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Azure OpenAI</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">GPT-4o, GPT-4 Turbo, GPT-4, GPT-3.5 Turbo via Azure infrastructure</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/azure_openai" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Azure Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Google</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Gemini Pro, Gemini Ultra, PaLM 2 (via Vertex AI or Generative AI API)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/google" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Google Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">OpenRouter</span>
+                        <span class="badge" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); font-size: 0.65rem; margin-left: 0.5rem;">Default</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">100+ models from multiple providers via single API (OpenAI, Anthropic, Google, Meta, Mistral, and more)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Groq</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Llama 3.1, Llama 3, Mixtral, Gemma (ultra-fast inference)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Mistral AI</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Mistral Large, Mistral Medium, Mistral Small, Mixtral</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Cohere</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Command R+, Command R, Command, Command Light</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Perplexity</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Sonar models with web search capabilities</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Together AI</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Llama 3, Qwen, DeepSeek, and 50+ open-source models</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Fireworks AI</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Fast inference for Llama, Mixtral, Gemma, and more</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Ollama</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Self-hosted local models (Llama 3, Mistral, Gemma, CodeLlama, and more)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/ollama" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Ollama Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">HuggingFace</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Access to thousands of models via Inference API</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <span class="doc-action-name">Custom Endpoints</span>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <p class="doc-action-desc">Any OpenAI-compatible API endpoint (vLLM, Text Generation WebUI, LiteLLM, etc.)</p>
+                    </td>
+                    <td style="vertical-align: top; padding: 1rem;">
+                        <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/custom" target="_blank" style="color: var(--primary); font-size: 0.85rem;">Custom Endpoint Config →</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Quick Setup Examples</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Below are quick setup examples for the most popular providers. For complete configuration including advanced options, model selection, and parameter tuning, see the <a href="https://www.librechat.ai/docs/configuration/librechat_yaml" target="_blank" style="color: var(--primary);">LibreChat Configuration Documentation</a>.</p>
+
+        <!-- AWS Bedrock -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid var(--success);">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                    stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                AWS Bedrock (Recommended)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                AWS Bedrock provides reliable access to Claude models with cross-region inference profiles:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Request access to Claude models in the AWS Bedrock console</li>
+                <li style="margin-bottom: 0.5rem;">Create an IAM user with <code>bedrock:InvokeModel</code> permissions</li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=us-east-2</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat: <code>docker compose restart librechat</code></li>
+            </ol>
+        </div>
+
+        <!-- OpenRouter -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                OpenRouter (Multi-Provider)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                OpenRouter provides access to 100+ models through a single API key:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Sign up at <a href="https://openrouter.ai" target="_blank" style="color: var(--primary);">openrouter.ai</a></li>
+                <li style="margin-bottom: 0.5rem;">Generate an API key from your dashboard</li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">
+OPENROUTER_API_KEY=sk-or-v1-...</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat</li>
+            </ol>
+        </div>
+
+        <!-- OpenAI -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                OpenAI
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Access GPT-4o, GPT-4, and other OpenAI models:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Get an API key from <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--primary);">OpenAI Platform</a></li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">OPENAI_API_KEY=sk-...</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Configure in <code>chat-config/librechat.yaml</code> - see <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/openai" target="_blank" style="color: var(--primary);">OpenAI configuration guide</a></li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat</li>
+            </ol>
+        </div>
+
+        <!-- Anthropic -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                Anthropic (Direct API)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Use Claude models via Anthropic's direct API:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Get an API key from <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color: var(--primary);">Anthropic Console</a></li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">ANTHROPIC_API_KEY=sk-ant-...</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Configure in <code>chat-config/librechat.yaml</code> - see <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/anthropic" target="_blank" style="color: var(--primary);">Anthropic configuration guide</a></li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat</li>
+            </ol>
+        </div>
+
+        <!-- Google -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                Google (Gemini / Vertex AI)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Access Gemini models via Google's Generative AI or Vertex AI:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Get an API key from <a href="https://makersuite.google.com/app/apikey" target="_blank" style="color: var(--primary);">Google AI Studio</a></li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">GOOGLE_API_KEY=AIza...</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Configure in <code>chat-config/librechat.yaml</code> - see <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/google" target="_blank" style="color: var(--primary);">Google configuration guide</a></li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat</li>
+            </ol>
+        </div>
+
+        <!-- Azure OpenAI -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                Azure OpenAI
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Use OpenAI models through Azure's infrastructure:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Create an Azure OpenAI resource in the Azure Portal</li>
+                <li style="margin-bottom: 0.5rem;">Add to <code>chat-config/.env</code>:
+                    <pre style="background: var(--bg-primary); padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; margin: 0.5rem 0;">AZURE_OPENAI_API_KEY=...
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/</pre>
+                </li>
+                <li style="margin-bottom: 0.5rem;">Configure in <code>chat-config/librechat.yaml</code> - see <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/azure_openai" target="_blank" style="color: var(--primary);">Azure OpenAI configuration guide</a></li>
+                <li style="margin-bottom: 0.5rem;">Restart LibreChat</li>
+            </ol>
+        </div>
+
+        <!-- Ollama -->
+        <div style="background: var(--bg-secondary); padding: 1.25rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="margin: 0 0 0.75rem; font-size: 1rem;">
+                Ollama (Self-Hosted Local Models)
+            </h4>
+            <p style="color: var(--text-secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">
+                Run models locally on your own hardware:
+            </p>
+            <ol style="margin-left: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <li style="margin-bottom: 0.5rem;">Install <a href="https://ollama.ai" target="_blank" style="color: var(--primary);">Ollama</a> on your server</li>
+                <li style="margin-bottom: 0.5rem;">Pull models: <code>ollama pull llama3</code></li>
+                <li style="margin-bottom: 0.5rem;">Configure in <code>chat-config/librechat.yaml</code> with your Ollama endpoint</li>
+                <li style="margin-bottom: 0.5rem;">See <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/ollama" target="_blank" style="color: var(--primary);">Ollama configuration guide</a> for details</li>
+            </ol>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 2rem; margin-bottom: 1rem;">Configuration Files</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">All LLM configuration is managed through two files:</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem;">
+            <tbody style="color: var(--text-secondary);">
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem; width: 30%;"><strong><code>chat-config/.env</code></strong></td>
+                    <td style="padding: 0.75rem;">API keys and credentials for all providers. Never commit this file to version control.</td>
+                </tr>
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 0.75rem;"><strong><code>chat-config/librechat.yaml</code></strong></td>
+                    <td style="padding: 0.75rem;">Model configurations, endpoints, presets, and MCP server connections. See <a href="https://www.librechat.ai/docs/configuration/librechat_yaml" target="_blank" style="color: var(--primary);">LibreChat YAML Configuration</a> for complete documentation.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Adding Models to Chat UI</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Add model presets in <code>chat-config/librechat.yaml</code> to make them available in the Chat interface:</p>
+
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <p style="margin: 0 0 0.5rem; font-size: 0.9rem;"><strong>Example: Add a custom model to the UI</strong></p>
+            <pre style="margin: 0; padding: 0.5rem; background: var(--bg-primary); border-radius: 4px; font-size: 0.85rem; overflow-x: auto;">modelSpecs:
+  list:
+    - name: "my-custom-model"
+      label: "Custom Model Name"
+      description: "Your model description with CodePathfinder tools"
+      showIconInMenu: true
+      mcpServers:
+        - "codepathfinder"
+      preset:
+        endpoint: "bedrock"  # or openAI, anthropic, google, etc.
+        model: "your-model-id"
+        mcpServers:
+          - "codepathfinder"</pre>
+            <p style="margin: 0.5rem 0 0; font-size: 0.85rem; color: var(--text-secondary);">
+                See <a href="https://www.librechat.ai/docs/configuration/librechat_yaml/object_structure/model_specs" target="_blank" style="color: var(--primary);">Model Specs documentation</a> for all available options.
+            </p>
+        </div>
+
+        <div style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Important:</strong> Always include <code>mcpServers: ["codepathfinder"]</code> in your model presets to ensure all 29 CodePathfinder tools are available to the model.
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Model Selection in Chat</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Once configured, select your model from the dropdown in the Chat interface:</p>
+        <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+            <li style="margin-bottom: 0.5rem;">Click the model selector at the top of the chat interface</li>
+            <li style="margin-bottom: 0.5rem;">Choose from available models</li>
+            <li style="margin-bottom: 0.5rem;">All models automatically have access to CodePathfinder MCP tools</li>
+            <li style="margin-bottom: 0.5rem;">Switch models mid-conversation as needed</li>
+        </ul>
+
+        <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning); padding: 1rem; border-radius: 0 8px 8px 0; margin-top: 1.5rem;">
+            <p style="margin: 0; font-size: 0.9rem;">
+                <strong>Cost Considerations:</strong> Different models have different pricing. Claude Opus 4.6 is the most expensive but most capable. Claude Haiku 4.5 is the most cost-effective for simpler tasks. Monitor your provider's billing dashboard to track usage.
+            </p>
+        </div>
+    </div>
+
     <!-- ==================== API & MCP TOOLS ==================== -->
     <div class="card mb-6" id="api-mcp">
-        <h2>4. API &amp; MCP Tool Calling</h2>
+        <h2>6. API &amp; MCP Tool Calling</h2>
         <p style="margin-bottom: 1.5rem;">CodePathfinder provides a REST API and MCP (Model Context Protocol)
             integration for programmatic access to your indexed code.</p>
 
@@ -833,8 +1465,8 @@ Analyze the code for:
             </ol>
         </div>
 
-        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available MCP Tools (21 Total)</h3>
-        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Once connected, your AI agent has access to 21 tools across 4 categories.</p>
+        <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available MCP Tools (29 Total)</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Once connected, your AI agent has access to 29 tools across 6 categories.</p>
         <h4 style="font-size: 1rem; margin-top: 1rem; margin-bottom: 1rem;">Code Search (6 tools)</h4>
 
         <table class="doc-table">
@@ -1145,7 +1777,7 @@ Content-Type: application/json
 
     <!-- ==================== AI CHAT ==================== -->
     <div class="card mb-6" id="chat-api">
-        <h2>5. AI Chat</h2>
+        <h2>7. AI Chat</h2>
         <div
             style="background: var(--info-bg, rgba(59, 130, 246, 0.1)); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 0 8px 8px 0; margin-bottom: 1.5rem;">
             <p style="margin: 0; font-size: 0.9rem;">
@@ -1153,16 +1785,17 @@ Content-Type: application/json
                 <strong>Chat</strong> in the sidebar.
             </p>
         </div>
-        <p style="margin-bottom: 1.5rem;">The Chat interface lets you interact with your codebase through an AI assistant that has access to all 21 MCP tools.</p>
+        <p style="margin-bottom: 1.5rem;">The Chat interface lets you interact with your codebase through an AI assistant that has access to all 29 MCP tools.</p>
 
         <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">Available Models</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Default configuration includes:</p>
         <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-            <li style="margin-bottom: 0.5rem;"><strong>GPT-5</strong> — OpenAI's most capable model</li>
-            <li style="margin-bottom: 0.5rem;"><strong>GPT-5 Mini</strong> — Faster, cost-effective option</li>
-            <li style="margin-bottom: 0.5rem;"><strong>GPT-5.2</strong> — Latest OpenAI model</li>
-            <li style="margin-bottom: 0.5rem;"><strong>Claude Sonnet 4</strong> — Anthropic's balanced model</li>
-            <li style="margin-bottom: 0.5rem;"><strong>Claude 3.5 Haiku</strong> — Fast and efficient</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Claude Sonnet 4.6</strong> — Balanced performance and speed (default)</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Claude Opus 4.6</strong> — Most capable for complex tasks</li>
+            <li style="margin-bottom: 0.5rem;"><strong>Claude Haiku 4.5</strong> — Fast and efficient</li>
+            <li style="margin-bottom: 0.5rem;"><strong>OpenRouter Auto</strong> — Multi-provider access (100+ models)</li>
         </ul>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">See the <a href="#llm-models" style="color: var(--primary);">LLM Models</a> section to configure additional providers.</p>
 
         <h3 style="font-size: 1.1rem; margin-top: 1.5rem; margin-bottom: 1rem;">What You Can Do</h3>
         <ul style="margin-left: 1.5rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
@@ -1225,7 +1858,7 @@ Content-Type: application/json
     <!-- ==================== USER MANAGEMENT (Admin Only) ==================== -->
     {% if user.is_superuser %}
     <div class="card mb-6" id="user-management">
-        <h2>6. User Management <span class="badge badge-info"
+        <h2>8. User Management <span class="badge badge-info"
                 style="font-size: 0.7rem; vertical-align: middle;">Admin</span></h2>
         <p style="margin-bottom: 1.5rem;">As an administrator, you have full control over user accounts and access.</p>
 
@@ -1287,7 +1920,7 @@ Content-Type: application/json
 
     <!-- ==================== SYSTEM SETTINGS (Admin Only) ==================== -->
     <div class="card mb-6" id="system-settings">
-        <h2>7. System Settings <span class="badge badge-info"
+        <h2>9. System Settings <span class="badge badge-info"
                 style="font-size: 0.7rem; vertical-align: middle;">Admin</span></h2>
         <p style="margin-bottom: 1.5rem;">Configure global system settings for CodePathfinder, including search infrastructure and skills repository integration.</p>
 
@@ -1380,7 +2013,7 @@ Content-Type: application/json
 
     <!-- ==================== TROUBLESHOOTING ==================== -->
     <div class="card mb-6" id="troubleshooting">
-        <h2>{% if user.is_superuser %}8{% else %}6{% endif %}. Troubleshooting</h2>
+        <h2>{% if user.is_superuser %}10{% else %}8{% endif %}. Troubleshooting</h2>
         <p style="margin-bottom: 1.5rem;">Common issues and how to resolve them.</p>
 
         <details style="margin-bottom: 1rem; background: var(--bg-secondary); border-radius: 8px;">

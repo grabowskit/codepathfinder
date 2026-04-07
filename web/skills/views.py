@@ -101,6 +101,8 @@ class SkillListView(LoginRequiredMixin, ListView):
     context_object_name = 'skills'
 
     def get_queryset(self):
+        from django.db.models import Subquery, OuterRef
+
         user = self.request.user
         scope_filter = self.request.GET.get('scope', 'all')
 
@@ -115,6 +117,16 @@ class SkillListView(LoginRequiredMixin, ListView):
                 Q(scope='global') |
                 Q(scope='personal', created_by=user)
             )
+
+        # Annotate with user-specific usage count
+        queryset = queryset.annotate(
+            user_usage_count=Subquery(
+                SkillUsage.objects.filter(
+                    user=user,
+                    skill=OuterRef('pk')
+                ).values('usage_count')[:1]
+            )
+        )
 
         # Filter hidden skills - only superusers can see hidden skills
         if not user.is_superuser:

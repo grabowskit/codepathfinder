@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 PROVIDER_ANTHROPIC = "anthropic"       # Direct Anthropic API
 PROVIDER_BEDROCK = "bedrock"           # AWS Bedrock
 PROVIDER_OPENAI = "openai"             # OpenAI
+PROVIDER_OPENROUTER = "openrouter"     # OpenRouter (OpenAI-compatible)
 
 
 def _yaml_path() -> str:
@@ -88,6 +89,8 @@ def _endpoint_to_provider(endpoint: str) -> Optional[str]:
         return PROVIDER_BEDROCK
     if endpoint in ("openai", "openai (custom)"):
         return PROVIDER_OPENAI
+    if endpoint in ("openrouter", "openrouter (custom)"):
+        return PROVIDER_OPENROUTER
     if endpoint == "anthropic":
         return PROVIDER_ANTHROPIC
     return None
