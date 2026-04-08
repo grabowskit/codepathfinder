@@ -7,6 +7,7 @@ urlpatterns = [
     path('import/', views.MemoryImportView.as_view(), name='memory_import'),
     path('interview/', views.MemoryInterviewView.as_view(), name='memory_interview'),
     path('api/search/', views.MemorySearchAPIView.as_view(), name='memory_search_api'),
+    path('api/tags/', views.MemoryTagsAPIView.as_view(), name='memory_api_tags'),
     path('<int:pk>/', views.MemoryDetailView.as_view(), name='memory_detail'),
     path('<int:pk>/edit/', views.MemoryUpdateView.as_view(), name='memory_update'),
     path('<int:pk>/delete/', views.MemoryDeleteView.as_view(), name='memory_delete'),

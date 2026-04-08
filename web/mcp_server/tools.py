@@ -2786,6 +2786,9 @@ def skills_import(
                     "Choose a different name or contact the skill owner."
                 )
 
+        # Determine scope: global for superusers, personal for regular users
+        scope = 'global' if user.is_superuser else 'personal'
+
         # Create or update the skill
         skill, created = Skill.objects.update_or_create(
             name=skill_data['name'],
@@ -2794,7 +2797,8 @@ def skills_import(
                 'instructions': skill_data['instructions'],
                 'allowed_tools': skill_data.get('allowed_tools', []),
                 'tags': skill_data.get('tags', []),
-                'created_by': user if created else (existing.created_by if existing else user),
+                'scope': scope,
+                'created_by': existing.created_by if existing else user,
                 'is_active': True,
             }
         )

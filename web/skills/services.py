@@ -895,22 +895,264 @@ class SkillService:
 
         return {'imported': imported, 'skipped': skipped, 'errors': errors}
 
+    def _ensure_user_repo_exists(self, github, owner, repo_name, user):
+        """
+        Ensure the user's personal skills repository exists, creating it if needed.
+
+        Args:
+            github: Authenticated PyGithub client
+            owner: Repository owner (username or org)
+            repo_name: Repository name
+            user: Django User object
+
+        Returns:
+            PyGithub Repository object
+
+        Raises:
+            SkillSyncError: If repo cannot be accessed or created
+        """
+        try:
+            # Try to access existing repo
+            repo = github.get_repo(f"{owner}/{repo_name}")
+            logger.info(f"Found existing skills repo: {owner}/{repo_name}")
+            return repo
+        except GithubException as e:
+            # If it's a 404 (repo not found), create it
+            if e.status == 404:
+                logger.info(f"Skills repo not found. Creating {owner}/{repo_name}...")
+                try:
+                    # Get the authenticated user
+                    gh_user = github.get_user()
+
+                    # Only create repo if the owner matches the authenticated user
+                    if gh_user.login.lower() != owner.lower():
+                        raise SkillSyncError(
+                            f"Cannot create repository under '{owner}' - token belongs to '{gh_user.login}'. "
+                            f"Please create the repository manually or use a repo URL under your account."
+                        )
+
+                    # Create the repository
+                    repo = gh_user.create_repo(
+                        name=repo_name,
+                        description=f"Personal skills for CodePathfinder (user: {user.username})",
+                        private=False,
+                        auto_init=True  # Creates with README.md
+                    )
+
+                    logger.info(f"Created new skills repository: {owner}/{repo_name}")
+
+                    # Initialize with skills/ directory structure
+                    self._initialize_skills_repo(repo, 'main')
+
+                    return repo
+
+                except GithubException as create_error:
+                    raise SkillSyncError(
+                        f"Failed to create repository: {create_error.data.get('message', str(create_error))}"
+                    )
+            else:
+                # Some other error (bad credentials, permission denied, etc.)
+                raise SkillSyncError(f"Cannot access personal skills repository: {e.data.get('message', str(e))}")
+
+    def _initialize_skills_repo(self, repo, branch):
+        """
+        Initialize a new skills repository with basic structure.
+
+        Creates:
+        - skills/ directory
+        - skills/README.md with instructions
+
+        Args:
+            repo: PyGithub Repository object
+            branch: Branch name
+        """
+        try:
+            # Check if skills/ directory already exists
+            try:
+                repo.get_contents("skills", ref=branch)
+                logger.info("skills/ directory already exists")
+                return
+            except GithubException as e:
+                if e.status != 404:
+                    raise
+
+            # Create skills/README.md with instructions
+            readme_content = """# Personal Skills
+
+This directory contains your personal skills for CodePathfinder.
+
+## Creating a New Skill
+
+Each skill should be in its own subdirectory with a `SKILL.md` file:
+
+```
+skills/
+├── my-skill-name/
+│   ├── SKILL.md          # Required: skill definition
+│   └── context.md        # Optional: additional context
+```
+
+## SKILL.md Format
+
+```yaml
+---
+name: my-skill-name
+description: Brief description of what this skill does
+allowed-tools:
+  - semantic_code_search
+  - read_file_from_chunks
+tags:
+  - python
+  - testing
+---
+
+# Instructions
+
+Full instructions for the AI agent go here...
+
+You can use markdown formatting to provide detailed guidance on:
+- What the skill should do
+- How it should approach the task
+- What output format to use
+- Any constraints or best practices
+```
+
+## Syncing
+
+To sync your skills with CodePathfinder:
+1. Commit and push your changes to this repository
+2. In CodePathfinder, go to Skills → Sync Personal Skills
+3. Your skills will be imported and available in chat
+
+For more information, see the [CodePathfinder documentation](https://github.com/grabowskit/codepathfinder).
+"""
+
+            # Create the README file
+            repo.create_file(
+                path="skills/README.md",
+                message="Initialize skills directory",
+                content=readme_content,
+                branch=branch
+            )
+
+            logger.info("Initialized skills/ directory with README")
+
+        except GithubException as e:
+            logger.warning(f"Failed to initialize skills directory: {e}")
+            # Don't raise - repo was created successfully, this is just nice-to-have
+
+    def _push_user_skills_to_github(self, user, repo, branch):
+        """
+        Push user's personal skills from database to their GitHub repository.
+
+        Pushes active personal skills that are newer than the GitHub version.
+        Compares local updated_at with GitHub's last commit timestamp.
+
+        Args:
+            user: Django User object
+            repo: PyGithub Repository object
+            branch: Branch name
+
+        Returns:
+            List of pushed skill names
+        """
+        pushed = []
+        skipped = []
+
+        # Get all active personal skills for this user
+        skills_to_push = Skill.objects.filter(
+            scope='personal',
+            created_by=user,
+            is_active=True
+        )
+
+        for skill in skills_to_push:
+            try:
+                # Determine the GitHub path for this skill
+                skill_dir_name = skill.name.lower().replace(' ', '-').replace('_', '-')
+                skill_md_path = f"skills/{skill_dir_name}/SKILL.md"
+
+                # Get GitHub file's last commit timestamp
+                github_timestamp = self._get_github_file_timestamp(repo, skill_md_path, branch)
+
+                # Only push if local version is newer than GitHub version
+                # (or if skill doesn't exist in GitHub yet)
+                should_push = True
+                if github_timestamp and skill.updated_at:
+                    if skill.updated_at <= github_timestamp:
+                        logger.info(
+                            f"Skipping push for '{skill.name}': GitHub version is newer or same "
+                            f"(local: {skill.updated_at}, GitHub: {github_timestamp})"
+                        )
+                        should_push = False
+                        skipped.append(skill.name)
+
+                if should_push:
+                    # Use the existing push_skill_to_github method but with user's repo
+                    content = self.export_skill_to_md(skill)
+
+                    try:
+                        # Check if file already exists
+                        existing_file = repo.get_contents(skill_md_path, ref=branch)
+                        # Update existing file
+                        repo.update_file(
+                            path=skill_md_path,
+                            message=f"Update personal skill: {skill.name}",
+                            content=content,
+                            sha=existing_file.sha,
+                            branch=branch
+                        )
+                        logger.info(f"Updated personal skill in GitHub: {skill_md_path}")
+                    except GithubException as e:
+                        if e.status == 404:
+                            # Create new file
+                            repo.create_file(
+                                path=skill_md_path,
+                                message=f"Add personal skill: {skill.name}",
+                                content=content,
+                                branch=branch
+                            )
+                            logger.info(f"Created personal skill in GitHub: {skill_md_path}")
+                        else:
+                            raise
+
+                    # Update skill's github_path and last_synced
+                    skill.github_path = skill_md_path
+                    skill.last_synced = timezone.now()
+                    skill.save(update_fields=['github_path', 'last_synced'])
+
+                    pushed.append(skill.name)
+            except (SkillPushError, GithubException) as e:
+                logger.warning(f"Failed to push personal skill {skill.name}: {e}")
+            except Exception as e:
+                logger.warning(f"Unexpected error pushing personal skill {skill.name}: {e}")
+
+        logger.info(f"Pushed {len(pushed)} personal skills to GitHub for user {user.username}, skipped {len(skipped)} (GitHub newer)")
+        return pushed
+
     def sync_user_skills(self, user):
         """
-        Sync personal skills for a specific user from their configured GitHub repo.
+        Bi-directional sync: Pull from user's GitHub repo AND push local personal skills to GitHub.
 
-        Fetches skills from the user's skills_repo_url (set in UserGitHubSettings)
-        and creates/updates Skill objects with scope='personal' and created_by=user.
+        This mirrors the admin sync functionality but for personal skills:
+        1. Pull all skills from the user's skills repository to database
+        2. Push all user's database personal skills to their GitHub repository
 
         Args:
             user: Django User object with github_settings configured
 
         Returns:
-            Dict with sync results: {'synced': [...], 'errors': [...]}
+            Dict with sync results: {'pulled': [...], 'pushed': [...], 'errors': [...]}
 
         Raises:
             SkillSyncError: If user has no skills repo configured or sync fails
         """
+        results = {
+            'pulled': [],
+            'pushed': [],
+            'errors': []
+        }
+
         try:
             github_settings = user.github_settings
         except Exception:
@@ -936,80 +1178,88 @@ class SkillService:
         owner, repo_name = parts[-2], parts[-1]
 
         github = Github(token)
-        try:
-            repo = github.get_repo(f"{owner}/{repo_name}")
-        except GithubException as e:
-            raise SkillSyncError(f"Cannot access personal skills repository: {e.data.get('message', str(e))}")
+        # Ensure repo exists, creating it if needed
+        repo = self._ensure_user_repo_exists(github, owner, repo_name, user)
 
+        # Phase 1: Pull from GitHub
         try:
             contents = repo.get_contents("skills", ref=branch)
+            synced = []
+            synced_dirs = set()
+
+            for item in contents:
+                if item.type == "dir":
+                    synced_dirs.add(item.path)
+                    skill_md_path = f"{item.path}/SKILL.md"
+                    try:
+                        file_content = repo.get_contents(skill_md_path, ref=branch)
+                        content = file_content.decoded_content.decode('utf-8')
+                        skill_data = self.parse_skill_md(content)
+                        self._validate_skill_data(skill_data)
+
+                        # Use name-user combination to allow personal skills with same name as global
+                        # Personal skills get a unique lookup key: name + created_by
+                        personal_name = skill_data['name']
+
+                        skill, created = Skill.objects.update_or_create(
+                            name=personal_name,
+                            scope='personal',
+                            created_by=user,
+                            defaults={
+                                'description': skill_data['description'],
+                                'instructions': skill_data['instructions'],
+                                'allowed_tools': skill_data.get('allowed_tools', []),
+                                'tags': skill_data.get('tags', []),
+                                'github_path': skill_md_path,
+                                'source_repo_url': github_settings.skills_repo_url,
+                                'last_synced': timezone.now(),
+                                'is_active': True,
+                                'is_hidden': skill_data.get('hidden', False),
+                            }
+                        )
+                        synced.append(skill.name)
+                        action = "Created" if created else "Updated"
+                        logger.info(f"{action} personal skill '{skill.name}' for user {user.username}")
+                    except GithubException:
+                        logger.debug(f"No SKILL.md found in {item.path}")
+                    except Exception as e:
+                        results['errors'].append(f"Pull from {item.path}: {str(e)}")
+                        logger.warning(f"Failed to sync personal skill from {item.path}: {e}")
+
+            # Deactivate personal skills whose directories no longer exist in the repo
+            user_personal_skills = Skill.objects.filter(
+                scope='personal',
+                created_by=user,
+                is_active=True
+            ).exclude(github_path='')
+
+            for skill in user_personal_skills:
+                if not skill.github_path:
+                    continue
+                skill_dir = '/'.join(skill.github_path.split('/')[:-1])
+                if skill_dir not in synced_dirs:
+                    skill.is_active = False
+                    skill.save(update_fields=['is_active'])
+                    logger.info(f"Deactivated orphaned personal skill '{skill.name}' for user {user.username}")
+
+            results['pulled'] = synced
+            logger.info(f"Pulled {len(synced)} personal skills from GitHub for user {user.username}")
         except GithubException as e:
             if e.status == 404:
                 logger.info(f"No 'skills' directory in user {user.username}'s repo yet")
-                return {'synced': [], 'errors': []}
-            raise SkillSyncError(f"Cannot access 'skills' directory: {e.data.get('message', str(e))}")
+                results['pulled'] = []
+            else:
+                results['errors'].append(f"Pull failed: {e.data.get('message', str(e))}")
 
-        synced = []
-        errors = []
-        synced_dirs = set()
+        # Phase 2: Push to GitHub
+        try:
+            pushed = self._push_user_skills_to_github(user, repo, branch)
+            results['pushed'] = pushed
+        except Exception as e:
+            results['errors'].append(f"Push failed: {str(e)}")
+            logger.warning(f"Failed to push personal skills for user {user.username}: {e}")
 
-        for item in contents:
-            if item.type == "dir":
-                synced_dirs.add(item.path)
-                skill_md_path = f"{item.path}/SKILL.md"
-                try:
-                    file_content = repo.get_contents(skill_md_path, ref=branch)
-                    content = file_content.decoded_content.decode('utf-8')
-                    skill_data = self.parse_skill_md(content)
-                    self._validate_skill_data(skill_data)
-
-                    # Use name-user combination to allow personal skills with same name as global
-                    # Personal skills get a unique lookup key: name + created_by
-                    personal_name = skill_data['name']
-
-                    skill, created = Skill.objects.update_or_create(
-                        name=personal_name,
-                        scope='personal',
-                        created_by=user,
-                        defaults={
-                            'description': skill_data['description'],
-                            'instructions': skill_data['instructions'],
-                            'allowed_tools': skill_data.get('allowed_tools', []),
-                            'tags': skill_data.get('tags', []),
-                            'github_path': skill_md_path,
-                            'source_repo_url': github_settings.skills_repo_url,
-                            'last_synced': timezone.now(),
-                            'is_active': True,
-                            'is_hidden': skill_data.get('hidden', False),
-                        }
-                    )
-                    synced.append(skill.name)
-                    action = "Created" if created else "Updated"
-                    logger.info(f"{action} personal skill '{skill.name}' for user {user.username}")
-                except GithubException:
-                    logger.debug(f"No SKILL.md found in {item.path}")
-                except Exception as e:
-                    errors.append(f"{item.path}: {str(e)}")
-                    logger.warning(f"Failed to sync personal skill from {item.path}: {e}")
-
-        # Deactivate personal skills whose directories no longer exist in the repo
-        user_personal_skills = Skill.objects.filter(
-            scope='personal',
-            created_by=user,
-            is_active=True
-        ).exclude(github_path='')
-
-        for skill in user_personal_skills:
-            if not skill.github_path:
-                continue
-            skill_dir = '/'.join(skill.github_path.split('/')[:-1])
-            if skill_dir not in synced_dirs:
-                skill.is_active = False
-                skill.save(update_fields=['is_active'])
-                logger.info(f"Deactivated orphaned personal skill '{skill.name}' for user {user.username}")
-
-        logger.info(f"Synced {len(synced)} personal skills for user {user.username}")
-        return {'synced': synced, 'errors': errors}
+        return results
 
 
 # Import models at module level for search_skills Q objects

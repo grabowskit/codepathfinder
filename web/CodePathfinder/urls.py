@@ -39,6 +39,7 @@ urlpatterns = [
     path('skills/', include('skills.urls')),  # Skills management
     path('memories/', include('memories.urls')),  # Memories knowledge base
     path('otel/', include('otel_ingest.urls')),  # OTLP auth proxy (customer telemetry ingest)
+    path('telemetry/', include('telemetry.urls')),  # OSS telemetry ingestion
     path('chat/', include('chat.urls')),  # LibreChat integration
     path('accounts/profile/', RedirectView.as_view(pattern_name='project_list', permanent=False)),
     # path('', RedirectView.as_view(pattern_name='project_list', permanent=False), name='home'),

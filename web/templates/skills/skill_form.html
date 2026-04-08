@@ -99,9 +99,36 @@
 
         <!-- Tags -->
         <div class="form-group mb-4">
-            <label class="form-label" for="id_tags">Tags</label>
-            {{ form.tags }}
-            <small class="help-text">JSON array of tags for filtering, e.g., ["python", "testing", "code-quality"]</small>
+            <label class="form-label">Tags</label>
+            <small class="help-text" style="display: block; margin-bottom: 0.75rem;">Select existing tags or type a new one below.</small>
+
+            <div id="tags-loading" style="color: var(--text-secondary); padding: 1rem;">
+                Loading available tags...
+            </div>
+
+            <div id="tags-container" style="display: none;">
+                <!-- Search input -->
+                <div style="margin-bottom: 0.75rem;">
+                    <input type="text" id="tag-search-input" placeholder="Search tags or type new tag name..."
+                           class="form-control" style="margin-bottom: 0.5rem;">
+                    <button type="button" id="create-tag-btn" class="btn btn-secondary" style="width: 100%; font-size: 0.875rem;">
+                        + Create New Tag from Search
+                    </button>
+                </div>
+
+                <!-- Tags checkboxes -->
+                <div id="tags-checkboxes" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem;">
+                    <!-- Tags will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <div id="tags-error" style="display: none; color: #ef4444; padding: 0.5rem 0;">
+                Failed to load tags.
+            </div>
+
+            <!-- Hidden input to store the JSON array value -->
+            <input type="hidden" name="tags" id="id_tags" value="{{ form.tags.value|default:'[]' }}">
+
             {% if form.tags.errors %}
             <div class="text-danger" style="font-size: 0.85rem; margin-top: 0.25rem;">{{ form.tags.errors.0 }}</div>
             {% endif %}
@@ -261,5 +288,135 @@
         const selectedTools = Array.from(checkboxes).map(cb => cb.value);
         hiddenInput.value = JSON.stringify(selectedTools);
     }
+
+    // ============================================================================
+    // Tag Selector (matches Allowed Tools pattern)
+    // ============================================================================
+
+    function loadAvailableTags() {
+        const loadingEl = document.getElementById('tags-loading');
+        const containerEl = document.getElementById('tags-container');
+        const errorEl = document.getElementById('tags-error');
+        const checkboxesEl = document.getElementById('tags-checkboxes');
+        const searchInput = document.getElementById('tag-search-input');
+        const createBtn = document.getElementById('create-tag-btn');
+        const hiddenInput = document.getElementById('id_tags');
+
+        let selectedTags = [];
+        let allTags = [];
+
+        // Parse currently selected tags
+        try {
+            const value = hiddenInput.value;
+            if (value && value !== 'None') {
+                selectedTags = JSON.parse(value);
+            }
+        } catch (e) {
+            console.error('Error parsing tags:', e);
+        }
+
+        // Load tags from API
+        fetch('{% url "skill_api_tags" %}')
+            .then(response => response.json())
+            .then(data => {
+                allTags = data.tags || [];
+                loadingEl.style.display = 'none';
+                containerEl.style.display = 'block';
+                renderTags();
+            })
+            .catch(error => {
+                console.error('Error loading tags:', error);
+                loadingEl.style.display = 'none';
+                errorEl.style.display = 'block';
+            });
+
+        // Render tags (simple checkbox list like tools)
+        function renderTags(filter = '') {
+            const filteredTags = filter
+                ? allTags.filter(tag => tag.toLowerCase().includes(filter.toLowerCase()))
+                : allTags;
+
+            let html = '';
+            if (filteredTags.length === 0) {
+                html = '<div style="padding: 1rem; text-align: center; color: var(--text-secondary);">No tags found</div>';
+            } else {
+                filteredTags.forEach(tag => {
+                    const isChecked = selectedTags.includes(tag);
+                    html += `
+                        <label style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; cursor: pointer; border-radius: 4px; transition: background 0.15s;"
+                               onmouseover="this.style.background='var(--surface-light)'"
+                               onmouseout="this.style.background='transparent'">
+                            <input type="checkbox" name="tag_checkbox" value="${tag}" ${isChecked ? 'checked' : ''}
+                                   style="margin: 0; accent-color: var(--primary-color);">
+                            <div style="flex: 1; font-weight: 500; color: var(--text-primary); font-size: 0.875rem;">
+                                ${tag}
+                            </div>
+                        </label>
+                    `;
+                });
+            }
+
+            checkboxesEl.innerHTML = html;
+
+            // Add event listeners to checkboxes
+            checkboxesEl.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedTags);
+            });
+        }
+
+        // Update selected tags in hidden input
+        function updateSelectedTags() {
+            const checkboxes = document.querySelectorAll('input[name="tag_checkbox"]:checked');
+            selectedTags = Array.from(checkboxes).map(cb => cb.value);
+            hiddenInput.value = JSON.stringify(selectedTags);
+        }
+
+        // Search filter
+        searchInput.addEventListener('input', function() {
+            renderTags(this.value);
+        });
+
+        // Create new tag
+        createBtn.addEventListener('click', function() {
+            const newTag = searchInput.value.trim().toLowerCase();
+            if (!newTag) {
+                alert('Please enter a tag name');
+                return;
+            }
+
+            if (allTags.includes(newTag)) {
+                // Tag exists, just check it if not already selected
+                if (!selectedTags.includes(newTag)) {
+                    selectedTags.push(newTag);
+                    hiddenInput.value = JSON.stringify(selectedTags);
+                    renderTags();
+                }
+                searchInput.value = '';
+                searchInput.focus();
+                return;
+            }
+
+            // Add new tag
+            allTags.push(newTag);
+            allTags.sort();
+            selectedTags.push(newTag);
+            hiddenInput.value = JSON.stringify(selectedTags);
+
+            searchInput.value = '';
+            renderTags();
+            searchInput.focus();
+        });
+
+        // Handle Enter key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                createBtn.click();
+            }
+        });
+    }
+
+    // Load tags on page load
+    loadAvailableTags();
 </script>
 {% endblock %}

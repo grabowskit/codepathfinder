@@ -503,6 +503,41 @@ class AvailableToolsAPIView(LoginRequiredMixin, View):
         return JsonResponse({'tools': tools})
 
 
+class SkillTagsAPIView(LoginRequiredMixin, View):
+    """
+    Get all unique tags used in skills (global + user's personal skills).
+
+    GET /skills/api/tags/?q=<optional_filter>
+
+    Returns JSON with list of tag strings for the tag selector.
+    """
+
+    def get(self, request):
+        query = request.GET.get('q', '').strip().lower()
+        user = request.user
+
+        # Get all skills visible to this user
+        skills = Skill.objects.filter(is_active=True).filter(
+            Q(scope='global') | Q(scope='personal', created_by=user)
+        )
+        if not user.is_superuser:
+            skills = skills.filter(is_hidden=False)
+
+        # Collect all unique tags
+        all_tags = set()
+        for skill in skills:
+            if skill.tags:
+                all_tags.update(skill.tags)
+
+        # Filter by query if provided
+        if query:
+            all_tags = {tag for tag in all_tags if query in tag.lower()}
+
+        return JsonResponse({
+            'tags': sorted(all_tags)
+        })
+
+
 class SkillImportView(LoginRequiredMixin, View):
     """
     Import skills from SKILL.md formatted content or multiple files.
@@ -825,11 +860,19 @@ class UserSkillSyncView(LoginRequiredMixin, View):
             service = SkillService()
             results = service.sync_user_skills(request.user)
 
-            if results['synced']:
-                messages.success(request, f"Synced {len(results['synced'])} personal skill(s) from your repository.")
-            else:
-                messages.info(request, 'Sync completed. No personal skills found or updated.')
+            # Build success message
+            msg_parts = []
+            if results.get('pulled'):
+                msg_parts.append(f"Pulled {len(results['pulled'])} skill(s) from GitHub")
+            if results.get('pushed'):
+                msg_parts.append(f"Pushed {len(results['pushed'])} skill(s) to GitHub")
 
+            if msg_parts:
+                messages.success(request, '. '.join(msg_parts) + '.')
+            else:
+                messages.info(request, 'Sync completed. No changes detected.')
+
+            # Show any errors as warnings
             for error in results.get('errors', []):
                 messages.warning(request, error)
 

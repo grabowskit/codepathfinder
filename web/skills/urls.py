@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/search/', views.SkillSearchAPIView.as_view(), name='skill_api_search'),
     path('api/top/', views.TopSkillsAPIView.as_view(), name='skill_api_top'),
     path('api/tools/', views.AvailableToolsAPIView.as_view(), name='skill_api_tools'),
+    path('api/tags/', views.SkillTagsAPIView.as_view(), name='skill_api_tags'),
     path('api/toggle-visibility/<int:skill_id>/', views.SkillToggleVisibilityView.as_view(), name='skill_toggle_visibility'),
 
     # Detail routes (keep last due to <str:name> pattern)

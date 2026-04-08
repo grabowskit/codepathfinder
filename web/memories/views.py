@@ -282,6 +282,53 @@ class MemorySearchAPIView(LoginRequiredMixin, View):
         return JsonResponse({'results': results})
 
 
+class MemoryTagsAPIView(LoginRequiredMixin, View):
+    """
+    Get all unique tags used in memories (user's + org-level if staff).
+
+    GET /memories/api/tags/?q=<optional_filter>
+
+    Returns JSON with list of tag strings for the tag selector.
+    Also includes skill tags for unified taxonomy.
+    """
+
+    def get(self, request):
+        query = request.GET.get('q', '').strip().lower()
+        service = MemoryService()
+
+        # Get all memories visible to this user
+        memories = service.list_memories(user=request.user)
+
+        # Collect all unique tags from memories
+        all_tags = set()
+        for memory in memories:
+            if memory.tags:
+                all_tags.update(memory.tags)
+
+        # Also include skill tags for unified taxonomy
+        try:
+            from skills.models import Skill
+            from django.db.models import Q
+            skills = Skill.objects.filter(is_active=True).filter(
+                Q(scope='global') | Q(scope='personal', created_by=request.user)
+            )
+            if not request.user.is_superuser:
+                skills = skills.filter(is_hidden=False)
+            for skill in skills:
+                if skill.tags:
+                    all_tags.update(skill.tags)
+        except Exception:
+            pass
+
+        # Filter by query if provided
+        if query:
+            all_tags = {tag for tag in all_tags if query in tag.lower()}
+
+        return JsonResponse({
+            'tags': sorted(all_tags)
+        })
+
+
 # ---------------------------------------------------------------------------
 # Interview Wizard
 # ---------------------------------------------------------------------------
