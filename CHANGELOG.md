@@ -11,14 +11,12 @@ All notable changes to this project will be documented in this file.
   - Rate limiting: 100 events per installation per hour
   - Stores data in Elasticsearch `oss-telemetry-{YYYY.MM}` indices
   - Opt-out via `TELEMETRY_ENABLED=false`
-  - See `docs/TELEMETRY-ENDPOINT.md` for full details
 
 - **Bidirectional Personal Skills Sync**: Users can now push local skills to GitHub
   - "Sync My Skills" button now performs bidirectional sync (pull AND push)
   - Automatically pushes database skills to user's GitHub repo
   - Smart timestamp comparison prevents overwriting newer versions
   - Updates `github_path` and `last_synced` fields after successful push
-  - See `docs/PERSONAL_SKILLS_SETUP.md` for workflow details
 
 ### Fixed
 - **MCP `skills_import` Scope Assignment**: Fixed bug where imported skills defaulted to `global` scope for all users
@@ -39,12 +37,6 @@ All notable changes to this project will be documented in this file.
 
 - **UI Improvements**: Updated "Sync My Skills" button tooltip to clarify bidirectional sync
 
-### Documentation
-- Added `docs/TELEMETRY-ENDPOINT.md` - Complete telemetry implementation guide
-- Updated `docs/PERSONAL_SKILLS_SETUP.md` - Documented bidirectional sync workflows
-- Added `CHANGELOG_BIDIRECTIONAL_SYNC.md` - Detailed implementation notes
-- Updated `DEPLOYMENT.md` - Version history through v1.8.0
-- Updated `docs/claude-memory.md` - Latest deployment info and telemetry section
 
 ## [v1.7.3] - 2026-04-07
 
@@ -104,4 +96,4 @@ All notable changes to this project will be documented in this file.
 
 ## Contributing
 
-See `DEPLOYMENT.md` for deployment procedures and guidelines.
+See the README for setup and deployment procedures.
